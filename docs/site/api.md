@@ -26,7 +26,7 @@ The following error codes may be returned by the API token authentication layer.
 
 If you exceed this limit, you will be captcha'd. Captchas are automatically removed after 3 days. However, note that if you are captcha'd again within this 3 day period, the 3 day counter will reset.
 
-**Note**: This is only a feature on the [FreateOJ](https://dmoj.ca).
+**Note**: This is only a feature on FreateOJ.
 
 ## Format
 
@@ -96,7 +96,7 @@ Example of list filtering: `/api/v2/problems?organization=1&organization=2&type=
 
 ### `/api/v2/contests`
 
-Example: [/api/v2/contests?tag=seasonal&tag=dmopc](/api/v2/contests?tag=seasonal&tag=dmopc)
+Example: `/api/v2/contests?tag=seasonal&tag=dmopc`
 
 #### Basic filters
 
@@ -126,7 +126,7 @@ Example: [/api/v2/contests?tag=seasonal&tag=dmopc](/api/v2/contests?tag=seasonal
 
 ### `/api/v2/contest/<contest key>`
 
-Example: [/api/v2/contest/bts19](/api/v2/contest/bts19)
+Example: `/api/v2/contest/bts19`
 
 #### Object response
 
@@ -188,7 +188,7 @@ Example: [/api/v2/contest/bts19](/api/v2/contest/bts19)
 
 ### `/api/v2/participations`
 
-Example: [/api/v2/participations?contest=dmopc19c6&virtual_participation_number=0&is_disqualified=True](/api/v2/participations?contest=dmopc19c6&virtual_participation_number=0&is_disqualified=True)
+Example: `/api/v2/participations?contest=dmopc19c6&virtual_participation_number=0&is_disqualified=True`
 
 #### Basic filters
 
@@ -215,7 +215,7 @@ Example: [/api/v2/participations?contest=dmopc19c6&virtual_participation_number=
 
 ### `/api/v2/problems`
 
-Example: [/api/v2/problems?partial=True&type=Uncategorized](/api/v2/problems?partial=True&type=Uncategorized)
+Example: `/api/v2/problems?partial=True&type=Uncategorized`
 
 #### Basic filters
 
@@ -250,7 +250,7 @@ Example: [/api/v2/problems?partial=True&type=Uncategorized](/api/v2/problems?par
 
 ### `/api/v2/problem/<problem code>`
 
-Example: [/api/v2/problem/helloworld](/api/v2/problem/helloworld)
+Example: `/api/v2/problem/helloworld`
 
 #### Object response
 
@@ -294,7 +294,7 @@ Example: [/api/v2/problem/helloworld](/api/v2/problem/helloworld)
 
 ### `/api/v2/users`
 
-Example: [/api/v2/users?organization=8](/api/v2/users?organization=8)
+Example: `/api/v2/users?organization=8`
 
 #### List filters
 
@@ -316,7 +316,7 @@ Example: [/api/v2/users?organization=8](/api/v2/users?organization=8)
 
 ### `/api/v2/user/<user username>`
 
-Example: [/api/v2/user/Xyene](/api/v2/user/Xyene)
+Example: `/api/v2/user/Xyene`
 
 #### Object response
 
@@ -350,7 +350,7 @@ Example: [/api/v2/user/Xyene](/api/v2/user/Xyene)
 
 ### `/api/v2/submissions`
 
-Example: [/api/v2/submissions?user=Ninjaclasher](/api/v2/submissions?user=Ninjaclasher)
+Example: `/api/v2/submissions?user=Ninjaclasher`
 
 #### Basic filters
 
@@ -380,7 +380,7 @@ Example: [/api/v2/submissions?user=Ninjaclasher](/api/v2/submissions?user=Ninjac
 
 ### `/api/v2/submission/<submission id>`
 
-Example: [/api/v2/submission/1000000](/api/v2/submission/1000000)
+Example: `/api/v2/submission/1000000`
 
 #### Object response
 
@@ -438,7 +438,7 @@ Example: [/api/v2/submission/1000000](/api/v2/submission/1000000)
 
 ### `/api/v2/organizations`
 
-Example: [/api/v2/organizations?is_open=False](/api/v2/organizations?is_open=False)
+Example: `/api/v2/organizations?is_open=False`
 
 #### Basic filters
 
@@ -458,7 +458,7 @@ Example: [/api/v2/organizations?is_open=False](/api/v2/organizations?is_open=Fal
 
 ### `/api/v2/languages`
 
-Example: [/api/v2/languages?common_name=Python](/api/v2/languages?common_name=Python)
+Example: `/api/v2/languages?common_name=Python`
 
 #### Basic filters
 
@@ -480,7 +480,7 @@ Example: [/api/v2/languages?common_name=Python](/api/v2/languages?common_name=Py
 
 ### `/api/v2/judges`
 
-Example: [/api/v2/judges](/api/v2/judges)
+Example: `/api/v2/judges`
 
 #### Object response
 

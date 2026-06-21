@@ -103,7 +103,7 @@ Variables in global scope will exist throughout the grading process.
 - `result`: the submission's preliminary `Result`.
 
 Additionally, if the `check` method has the flag `run_on_error` set (i.e. `check.run_on_error = True`), it will be run on the submission's output, even if the submission received a preliminary IR/TLE/RTE/MLE verdict.
-~~The only built-in checker that has this flag set is the `linecount` checker.~~ (Removed in [this commit](https://github.com/freatevietnam/judge-server/commit/d0336f681f1bbf52a5e133a05ce2a2f8a78dc2d5))
+~~The only built-in checker that has this flag set is the `linecount` checker.~~ (Removed in this commit)
 
 ### Returns
 

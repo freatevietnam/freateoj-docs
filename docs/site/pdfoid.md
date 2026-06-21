@@ -11,7 +11,7 @@ Selenium to provide a REST endpoint for PDF rendering.
 First, clone the Pdfoid repository, and install it and its dependencies into a new virtualenv.
 
 ```shell-session
-$ git clone https://github.com/freatevietnam/pdfoid.git
+$ git clone Pdfoid repository
 $ cd pdfoid
 $ python3 -m venv env
 $ . env/bin/activate

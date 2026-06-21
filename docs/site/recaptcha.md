@@ -8,7 +8,7 @@ FreateOJ can integrate with reCAPTCHA to filter out spam registrations with a li
 
 ## Getting an API key
 
-First, head to the reCAPTCHA admin site at https://www.google.com/recaptcha/admin.
+First, head to the reCAPTCHA admin site at Google reCAPTCHA admin site.
 Select "reCAPTCHA v2", specify your domain, and click through to get an API key pair.
 
 In `local_settings.py`, set `RECAPTCHA_PUBLIC_KEY` to the site key, and `RECAPTCHA_PRIVATE_KEY` to the secret key.

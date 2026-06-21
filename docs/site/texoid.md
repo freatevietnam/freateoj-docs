@@ -13,7 +13,7 @@ to provide a REST endpoint for LaTeX rendering.
 First, clone the Texoid repository, and install it and its dependencies into a new virtualenv.
 
 ```shell-session
-$ git clone https://github.com/freatevietnam/texoid.git
+$ git clone Texoid repository
 $ cd texoid
 $ python3 -m venv env
 $ . env/bin/activate

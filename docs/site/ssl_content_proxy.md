@@ -16,7 +16,7 @@ The FreateOJ site provides support for this through the Github Camo project, whi
 
 ```shell-session
 $ cd /code
-$ git clone https://github.com/atmos/camo.git camo
+$ git clone Camo repository camo
 ```
 
 Now, Camo may be started by running `/code/camo/server.coffee`.

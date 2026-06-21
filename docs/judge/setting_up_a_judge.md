@@ -41,7 +41,7 @@ may give you more control at the expense of more administrative complexity.
 #### Pre-built
 
 We maintain Docker images with all runtimes we support in the
-[judge-server](https://github.com/freatevietnam/judge-server) project.
+[judge-server](judge-server) project.
 
 Runtimes are split into three tiers of decreasing support. Tier 1 includes
 Python 2/3, C/C++ (GCC only), Java 8, and Pascal. Tier 3 contains all the
@@ -50,15 +50,15 @@ mix; read the `Dockerfile` for each tier for details. These images are rebuilt
 and tested every week to contain the latest runtime versions.
 
 > **Note:** FreateOJ uses a custom tier, `tierfreateoj`, which contains all the runtimes in Tier 1
-> and some additional ones. You can find the list of supported runtimes [here](https://oj.freate.io.vn/runtimes).
-> The Docker image is maintained at [freateoj/judge-tierfreateoj](https://hub.docker.com/r/freateoj/judge-tierfreateoj).
+> and some additional ones. You can find the list of supported runtimes here.
+> The Docker image is maintained at freateoj/judge-tierfreateoj on Docker Hub.
 
 #### From source
 
 The session below build a `judge-tierfreateoj`:
 
 ```shell-session
-$ git clone --recursive https://github.com/freatevietnam/judge-server.git
+$ git clone --recursive judge-server
 $ cd judge/.docker
 $ make judge-tierfreateoj
 ```

@@ -39,7 +39,7 @@ $$f(x) = \begin{cases} 1 & \text{if } x\in\mathbb{Q} \\\\ -1 & \text{if } x\not\
 
 ### Real LaTeX (Diagrams)
 
-You can embed real $\LaTeX$ for diagrams ([example](https://dmoj.ca/problem/ds4)):
+You can embed real $\LaTeX$ for diagrams ([example](https://oj.freate.io.vn/problem/ds4)):
 
 ```latex
 <latex>

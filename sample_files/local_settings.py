@@ -266,7 +266,7 @@ TIMEZONE_MAP = '<URL to a world map image>'
 
 ## ======== Logging Settings ========
 # Documentation: See Django documentation
-#                https://docs.python.org/3/library/logging.config.html#configuration-dictionary-schema
+#                See Python logging documentation
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
