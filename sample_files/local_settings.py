@@ -30,6 +30,13 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     },
 }
+# For production, use Redis instead of LocMemCache to share cache across uWSGI workers:
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://localhost:6379/1',
+#     },
+# }
 
 # Your database credentials. PostgreSQL is required.
 # Documentation: See Django documentation
