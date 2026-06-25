@@ -148,7 +148,7 @@ MEDIA_ROOT = '/tmp/media'
 ## Problem data settings.
 # This is the directory where all the problem data are stored.
 # Change this to somewhere more permanent.
-FREATEOJ_PROBLEM_DATA_ROOT = '/tmp/problem_data/'
+DMOJ_PROBLEM_DATA_ROOT = '/tmp/problem_data/'
 
 ## Bridge controls.
 # The judge connection address and port; where the judges will connect to the site.
@@ -169,7 +169,7 @@ BAD_MAIL_PROVIDERS = set()
 # The number of submissions that a staff user can rejudge at once without
 # requiring the permission 'Rejudge a lot of submissions'.
 # Uncomment to change the submission limit.
-#FREATEOJ_SUBMISSIONS_REJUDGE_LIMIT = 10
+#DMOJ_SUBMISSIONS_REJUDGE_LIMIT = 10
 
 ## Event server.
 # Uncomment to enable live updating.
@@ -206,63 +206,63 @@ SELECT2_CSS_URL = '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.mi
 TIMEZONE_MAP = '<URL to a world map image>'
 
 ## Camo (See Camo documentation) usage.
-#FREATEOJ_CAMO_URL = '<URL to your camo install>'
-#FREATEOJ_CAMO_KEY = '<The CAMO_KEY environmental variable you used>'
+#DMOJ_CAMO_URL = '<URL to your camo install>'
+#DMOJ_CAMO_KEY = '<The CAMO_KEY environmental variable you used>'
 
 # Domains to exclude from being camo'd.
-#FREATEOJ_CAMO_EXCLUDE = ('https://oj.freate.io.vn',)
+#DMOJ_CAMO_EXCLUDE = ('https://oj.freate.io.vn',)
 
 # Set to True to use https when dealing with protocol-relative URLs.
 # See protocol-relative URL documentation for what they are.
-#FREATEOJ_CAMO_HTTPS = False
+#DMOJ_CAMO_HTTPS = False
 
 # HTTPS level. Affects <link rel='canonical'> elements generated.
 # Set to 0 to make http URLs canonical.
 # Set to 1 to make the currently used protocol canonical.
 # Set to 2 to make https URLs canonical.
-#FREATEOJ_HTTPS = 0
+#DMOJ_HTTPS = 0
 
 ## PDF rendering settings.
 
 # Enable PDF generation.
-#FREATEOJ_PDF_PDFOID_URL = '<URL to your pdfoid install>.'
+#DMOJ_PDF_PDFOID_URL = '<URL to your pdfoid install>.'
 
 # Directory to cache the PDF.
-#FREATEOJ_PDF_PROBLEM_CACHE = '/home/dmoj-uwsgi/pdfcache'
+#DMOJ_PDF_PROBLEM_CACHE = '/home/dmoj-uwsgi/pdfcache'
 
 # Path to use for nginx's X-Accel-Redirect feature.
 # Should be an internal location mapped to the above directory.
-#FREATEOJ_PDF_PROBLEM_INTERNAL = '/pdfcache'
+#DMOJ_PDF_PROBLEM_INTERNAL = '/pdfcache'
 
 ## Data download settings.
 # Uncomment to allow users to download their data.
-#FREATEOJ_USER_DATA_DOWNLOAD = True
+#DMOJ_USER_DATA_DOWNLOAD = True
 
 # Directory to cache user data downloads.
 # It is the administrator's responsibility to clean up old files.
-#FREATEOJ_USER_DATA_CACHE = '/home/dmoj-uwsgi/userdatacache'
+#DMOJ_USER_DATA_CACHE = '/home/dmoj-uwsgi/userdatacache'
 
 # Path to use for nginx's X-Accel-Redirect feature.
 # Should be an internal location mapped to the above directory.
-#FREATEOJ_USER_DATA_INTERNAL = '/userdatacache'
+#DMOJ_USER_DATA_INTERNAL = '/userdatacache'
 
 # How often a user can download their data.
-#FREATEOJ_USER_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
+#DMOJ_USER_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
 
 # Uncomment to allow contest authors to download contest data
-#FREATEOJ_CONTEST_DATA_DOWNLOAD = True
+#DMOJ_CONTEST_DATA_DOWNLOAD = True
 
 # Directory to cache contest data downloads.
 # It is the administrator's responsibility to clean up old files.
-#FREATEOJ_CONTEST_DATA_CACHE = '/home/dmoj-uwsgi/contestdatacache'
+#DMOJ_CONTEST_DATA_CACHE = '/home/dmoj-uwsgi/contestdatacache'
 
 # Path to use for nginx's X-Accel-Redirect feature.
 # Should be an internal location mapped to the above directory.
-#FREATEOJ_CONTEST_DATA_INTERNAL = '/contestdatacache'
+#DMOJ_CONTEST_DATA_INTERNAL = '/contestdatacache'
 
 # How often contest data can be exported.
 # This applies per contest, not per user.
-#FREATEOJ_CONTEST_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
+#DMOJ_CONTEST_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
 
 ## ======== Logging Settings ========
 # Documentation: See Django documentation
