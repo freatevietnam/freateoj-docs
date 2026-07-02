@@ -145,7 +145,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 
 .main li { margin-bottom: 4px; }
 
-/* Code blocks */
+/* Inline code */
 .main code {
     background: var(--bg-code);
     padding: 2px 6px;
@@ -154,7 +154,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
     font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
 }
 
-pre {
+/* Code blocks */
+.main pre {
     background: var(--code-bg);
     color: var(--code-text);
     padding: 16px 20px;
@@ -165,10 +166,10 @@ pre {
     line-height: 1.6;
 }
 
-pre code {
+.main pre code {
     background: none;
     padding: 0;
-    color: inherit;
+    color: var(--code-text);
     font-size: inherit;
 }
 
