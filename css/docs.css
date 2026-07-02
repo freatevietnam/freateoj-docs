@@ -167,8 +167,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 }
 
 .main pre code {
-    background: none;
-    padding: 0;
+    background: none !important;
+    padding: 0 !important;
     color: var(--code-text);
     font-size: inherit;
 }
