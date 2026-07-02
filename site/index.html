@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreateOJ Documentation</title>
+    <link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+    
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>FreateOJ Docs</h2>
+            <p>Online Judge Documentation</p>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a href="#">Getting Started</a>
+                    <ul>
+                        <li><a href="#installation">Installation</a></li>
+                        <li><a href="#updating">Updating</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">Site Admin</a>
+                    <ul>
+                        <li><a href="#contest-formats">Contest Formats</a></li>
+                        <li><a href="#permission-system">Permission System</a></li>
+                        <li><a href="#managing-problems">Managing Problems</a></li>
+                        <li><a href="#api">API Reference</a></li>
+                        <li><a href="#mathoid">Mathoid</a></li>
+                        <li><a href="#texoid">Texoid</a></li>
+                        <li><a href="#pdfoid">Pdfoid</a></li>
+                        <li><a href="#recaptcha">reCAPTCHA</a></li>
+                        <li><a href="#ssl-proxy">SSL Proxy</a></li>
+                        <li><a href="#contest-data-download">Contest Data Download</a></li>
+                        <li><a href="#user-data-download">User Data Download</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">Judge</a>
+                    <ul>
+                        <li><a href="#judge-setup">Setting Up</a></li>
+                        <li><a href="#judge-config">Configuration</a></li>
+                        <li><a href="#supported-languages">Supported Languages</a></li>
+                        <li><a href="#status-codes">Status Codes</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">Problem Format</a>
+                    <ul>
+                        <li><a href="#problem-format">Problem Format</a></li>
+                        <li><a href="#problem-examples">Problem Examples</a></li>
+                        <li><a href="#custom-checkers">Custom Checkers</a></li>
+                        <li><a href="#custom-graders">Custom Graders</a></li>
+                        <li><a href="#generators">Generators</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">Reference</a>
+                    <ul>
+                        <li><a href="#math-syntax">Math Syntax</a></li>
+                        <li><a href="#license">License</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    
+    <main class="main">
+
+        <div class="doc-section active" id="installation">
+            <h1>Installing the site</h1>
+            <h2>Installing the prerequisites</h2>
+<pre><code class="language-shell-session">$ apt update
+$ apt install git gcc g++ make python3-dev python3-pip python3-venv libxml2-dev libxslt1-dev zlib1g-dev gettext curl redis-server pkg-config libpq-dev
+</code></pre>
+            <p>Install Node.js 26 using nvm:</p>
+<pre><code class="language-shell-session">$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash
+$ source ~/.bashrc
+$ nvm install 26
+$ nvm use 26
+$ node --version
+</code></pre>
+            <h2>Creating the database</h2>
+            <p>Next, we will set up the database using PostgreSQL. Install PostgreSQL if you haven't already.</p>
+<pre><code class="language-shell-session">$ apt update
+$ apt install postgresql postgresql-client libpq-dev
+</code></pre>
+            <p>The next step is to set up the database itself. You should execute the commands listed below to create the necessary database and user.</p>
+<pre><code class="language-shell-session">$ sudo -u postgres psql
+postgres> CREATE USER freateoj WITH PASSWORD '&lt;postgresql user password&gt;';
+postgres> CREATE DATABASE freateoj OWNER freateoj;
+postgres> GRANT ALL PRIVILEGES ON DATABASE freateoj TO freateoj;
+postgres> \q
+</code></pre>
+            <h2>Installing prerequisites</h2>
+            <p>Now that you are done, you can start installing the site. First, create a virtual environment and activate it. Here, we'll create a virtual environment named <code>freateojsite</code>.</p>
+<pre><code class="language-shell-session">$ python3 -m venv freateojsite
+$ . freateojsite/bin/activate
+</code></pre>
+            <p>You should see <code>(freateojsite)</code> prepended to your shell. Henceforth, <code>(freateojsite)</code> commands assume you are in the code directory, with the virtual environment active.</p>
+            <blockquote><p><strong>Note:</strong> The virtual environment will help keep the modules needed separate from the system package manager, and save you many headaches when updating. Read more about virtual environments in the Python documentation.</p></blockquote>
+            <p>Now, fetch the site source code:</p>
+<pre><code class="language-shell-session">(freateojsite) $ git clone --recursive https://github.com/freatevietnam/freateoj.git site
+(freateojsite) $ cd site
+</code></pre>
+            <p>Install Python dependencies into the virtual environment.</p>
+<pre><code class="language-shell-session">(freateojsite) $ pip3 install -r requirements.txt
+</code></pre>
+            <p>Install Node.js packages:</p>
+<pre><code class="language-shell-session">(freateojsite) $ npm install
+</code></pre>
+            <p>You will now need to configure <code>dmoj/local_settings.py</code>. You should make a copy of <a href="sample_files/local_settings.py">this sample settings file</a> and read through it, making changes as necessary. Most importantly, you will want to update PostgreSQL credentials.</p>
+            <blockquote><p><strong>Note:</strong> Leave debug mode on for now; we'll disable it later after we've verified that the site works.</p>
+            <p>Generally, it's recommended that you add your settings in <code>dmoj/local_settings.py</code> rather than modifying <code>dmoj/settings.py</code> directly. <code>settings.py</code> will automatically read <code>local_settings.py</code> and load it, so write your configuration there.</p></blockquote>
+            <h2>Compiling assets</h2>
+            <p>FreateOJ uses <code>sass</code> and <code>autoprefixer</code> to generate the site stylesheets. FreateOJ comes with a <code>make_style.sh</code> script that may be run to compile and optimize the stylesheets.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./make_style.sh
+</code></pre>
+            <p>Now, collect static files into <code>STATIC_ROOT</code> as specified in <code>dmoj/local_settings.py</code>.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py collectstatic
+</code></pre>
+            <p>You will also need to generate internationalization files.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py compilemessages
+(freateojsite) $ ./manage.py compilejsi18n
+</code></pre>
+            <h2>Setting up Celery</h2>
+            <p>The FreateOJ uses Celery workers to perform most of its heavy lifting, such as batch rescoring submissions. We will use Redis as its broker, though note that other brokers that Celery supports will work as well.</p>
+            <p>Start up the Redis server, which is needed by the Celery workers.</p>
+<pre><code class="language-shell-session">$ service redis-server start
+</code></pre>
+            <p>Configure <code>local_settings.py</code> by uncommenting <code>CELERY_BROKER_URL</code> and <code>CELERY_RESULT_BACKEND</code>. By default, Redis listens on localhost port 6379, which is reflected in <code>local_settings.py</code>. You will need to update the addresses if you changed Redis's settings.</p>
+            <p>We will test that Celery works soon.</p>
+            <h2>Setting up database tables</h2>
+            <p>We must generate the schema for the database, since it is currently empty.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py migrate
+</code></pre>
+            <p>Next, load some initial data so that your install is not entirely blank.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py loaddata navbar
+(freateojsite) $ ./manage.py loaddata language_small
+(freateojsite) $ ./manage.py loaddata demo
+</code></pre>
+            <blockquote><p><strong>Warning:</strong> Keep in mind that the <code>demo</code> fixture creates a superuser account with a username and password of <code>admin</code>. If your site is exposed to others, you should change the user's password or remove the user entirely.</p></blockquote>
+            <p>You should create an admin account with which to log in initially.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py createsuperuser
+</code></pre>
+            <h2>Running the server</h2>
+            <p>Now, you should verify that everything is going according to plan.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py check
+</code></pre>
+            <p>At this point, you should attempt to run the server, and see if it all works.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py runserver 0.0.0.0:8000
+</code></pre>
+            <p>You should Ctrl-C to exit after verifying.</p>
+            <blockquote><p><strong>Warning:</strong> <strong>Do not use <code>runserver</code> in production!</strong></p>
+            <p>We will set up a proper webserver using nginx and uWSGI soon.</p></blockquote>
+            <p>You should also test to see if <code>bridged</code> runs.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py runbridged
+</code></pre>
+            <p>If there are no errors after about 10 seconds, it probably works. You should Ctrl-C to exit.</p>
+            <p>Next, test that the Celery workers run.</p>
+<pre><code class="language-shell-session">(freateojsite) $ celery -A dmoj_celery worker
+</code></pre>
+            <p>You can Ctrl-C to exit.</p>
+            <h2>Setting up uWSGI</h2>
+            <p><code>runserver</code> is insecure and not meant for production workloads, and should not be used beyond testing. In the rest of this guide, we will be installing <code>uwsgi</code> and <code>nginx</code> to serve the site, using <code>supervisord</code> to keep <code>site</code> and <code>bridged</code> running. It's likely other configurations may work, but they are unsupported.</p>
+            <p>First, copy our <code>uwsgi.ini</code> (<a href="sample_files/uwsgi.ini">link</a>). You should change the paths to reflect your install.</p>
+            <p>You need to install <code>uwsgi</code>.</p>
+<pre><code class="language-shell-session">(freateojsite) $ pip3 install uwsgi
+</code></pre>
+            <p>To test, run:</p>
+<pre><code class="language-shell-session">(freateojsite) $ uwsgi --ini uwsgi.ini
+</code></pre>
+            <p>If it says workers are spawned, it probably works. You should Ctrl-C to exit.</p>
+            <h2>Setting up supervisord</h2>
+            <p>You should now install <code>supervisord</code> and configure it.</p>
+<pre><code class="language-shell-session">$ apt install supervisor
+</code></pre>
+            <p>Copy our <code>site.conf</code> (<a href="sample_files/site.conf">link</a>) to <code>/etc/supervisor/conf.d/site.conf</code>, <code>bridged.conf</code> (<a href="sample_files/bridged.conf">link</a>) to <code>/etc/supervisor/conf.d/bridged.conf</code>, <code>celery.conf</code> (<a href="sample_files/celery.conf">link</a>) to <code>/etc/supervisor/conf.d/celery.conf</code> and fill in the fields.</p>
+            <p>Next, reload <code>supervisord</code> and check that the site, bridged, and celery have started.</p>
+<pre><code class="language-shell-session">$ supervisorctl update
+$ supervisorctl status
+</code></pre>
+            <p>If all three processes are running, everything is good! Otherwise, peek at the logs and see what's wrong.</p>
+            <h2>Setting up nginx</h2>
+            <p>Now, it's time to set up <code>nginx</code>.</p>
+<pre><code class="language-shell-session">$ apt install nginx
+</code></pre>
+            <p>You should copy the sample <code>nginx.conf</code> (<a href="sample_files/nginx.conf">link</a>), edit it and place it in wherever it is supposed to be for your nginx install.</p>
+            <blockquote><p><strong>Note:</strong> Typically, <code>nginx</code> site files are located in <code>/etc/nginx/conf.d</code>. Some installations might place it at <code>/etc/nginx/sites-available</code> and require a symlink in <code>/etc/nginx/sites-enabled</code>.</p></blockquote>
+            <p>Next, check if there are any issues with your nginx setup.</p>
+<pre><code class="language-shell-session">$ nginx -t
+</code></pre>
+            <p>If not, reload the <code>nginx</code> configuration.</p>
+<pre><code class="language-shell-session">$ service nginx reload
+</code></pre>
+            <p>You should be good to go. Visit the site at where you set it up to verify.</p>
+            <p>If it does not work, check <code>nginx</code> logs and <code>uwsgi</code> log <code>stdout</code>/<code>stderr</code> for details.</p>
+            <blockquote><p><strong>Note:</strong> Now that your site is installed, remember to set <code>DEBUG</code> to <code>False</code> in <code>local_settings</code>. Leaving it <code>True</code> is a security risk.</p></blockquote>
+            <h2>Configuration of event server</h2>
+            <p>The event server uses Socket.IO for real-time updates. The daemon is a Node.js process that listens for HTTP POST requests from Django and broadcasts events to connected browser clients.</p>
+            <p>Configure in <code>local_settings.py</code>:</p>
+<pre><code class="language-python">EVENT_DAEMON_USE = True
+EVENT_DAEMON_POST = 'http://localhost:9996/'  # Django posts events here
+EVENT_DAEMON_GET = 'http://&lt;your domain&gt;/'    # Browser connects here (through nginx)
+EVENT_DAEMON_POLL = '/channels/'              # Long-poll fallback path
+</code></pre>
+            <p>Copy <code>wsevent.conf</code> (<a href="sample_files/wsevent.conf">link</a>) to <code>/etc/supervisor/conf.d/wsevent.conf</code>, update the paths, then restart supervisor.</p>
+            <p>The Socket.IO daemon runs on a single port (default 9996) and handles:</p>
+            <ul>
+                <li>WebSocket/long-poll connections from browser clients</li>
+                <li>HTTP POST requests from Django to broadcast events</li>
+            </ul>
+<pre><code class="language-shell-session">$ supervisorctl update
+$ supervisorctl restart bridged
+$ supervisorctl restart site
+$ service nginx restart
+</code></pre>
+        </div>
+
+        <div class="doc-section" id="updating">
+            <h1>Updating the site</h1>
+            <p>The FreateOJ is under active development, so occasionally you may wish to update. This is a fairly simple process.</p>
+            <blockquote><p><strong>Warning:</strong> The FreateOJ development team makes no commitment to backwards compatibility. It's possible that an update migration might add, change, or delete data from your install. Always back up before attempting an update.</p>
+            <p>If in doubt, feel free to contact us on Discord.</p></blockquote>
+            <p>First, switch to the site virtual environment, and pull the latest changes.</p>
+<pre><code class="language-shell-session">(freateojsite) $ git pull origin master
+</code></pre>
+            <p>Dependencies may have changed since the last time you updated, so install any missing ones now.</p>
+<pre><code class="language-shell-session">(freateojsite) $ pip3 install -r requirements.txt
+</code></pre>
+            <p>The database schema might also have changed, so update it.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./manage.py migrate
+(freateojsite) $ ./manage.py check
+</code></pre>
+            <p>Finally, update any static files that may have changed.</p>
+<pre><code class="language-shell-session">(freateojsite) $ ./make_style.sh
+(freateojsite) $ ./manage.py collectstatic
+(freateojsite) $ ./manage.py compilemessages
+(freateojsite) $ ./manage.py compilejsi18n
+</code></pre>
+            <p>That's it! You may wish to condense the above steps into a script you can run at a later time.</p>
+        </div>
+
+        <div class="doc-section" id="contest-formats">
+            <h1>Contest formats</h1>
+            <p>The FreateOJ ships with 6 contest formats by default: Default, IOI, Codechef IOI Ranklist (henceforth shortened to simply Legacy IOI), ECOO, AtCoder, and ICPC.</p>
+            <h2>Default</h2>
+            <p>The <code>Default</code> contest format is what all contests ran on pre-April 23, 2019.</p>
+            <p>The score is the sum of the highest-scoring submission on each problem, and ties are broken by adding the time of the last submission to each problem with a non-zero maximum score.</p>
+            <p>Note that <em>any</em> submission will increase time penalty, not just score-changing submissions.</p>
+            <p>There are no additional options that can be configured for this contest format.</p>
+            <h2>IOI</h2>
+            <p>The <code>IOI</code> contest format emulates the scoring used by IOI.</p>
+            <p>The score is equal to the sum of the final score on each problem, where the final score for a problem is the maximum score for each subtask across all submissions, and by default, ties are not broken. For example, consider a contestant that makes two submissions on a task with two subtasks. The first gets 30 points on the first subtask and 10 points on the second subtask. The second gets 0 points on the first subtask and 40 points on the second subtask. The final score for this problem will be 70.</p>
+            <p>The <code>cumtime</code> option can be set to <code>true</code> within the JSON configuration. This will break ties by summing the submission times of the first submissions that pass each subtask.</p>
+            <h2>Legacy IOI</h2>
+            <p>The <code>Legacy IOI</code> contest format emulates the scoring used by Codechef's IOI Ranklist.</p>
+            <p>The score is equal to the sum of the highest-scoring submission on each problem, and by default, ties are not broken.</p>
+            <p>The <code>cumtime</code> option can be set to <code>true</code> within the JSON configuration. This will break ties by summing the submission times of the most recent total score-changing submissions.</p>
+            <h2>ECOO</h2>
+            <p>The <code>ECOO</code> contest format is based on the scoring system used by the ECOO contest.</p>
+            <p>The score is equal to the sum of scores of the last submission to each problem. By default, ties are not broken, however, setting <code>cumtime</code> to <code>true</code> will sum the times of the last submission to each problem, and use that for tiebreaking.</p>
+            <p>The <code>first_ac_bonus</code> field, as suggested by the name, will add the specified number of points to a problem's score if it is solved on the first attempt, excluding compile errors and internal errors. This field defaults to 10.</p>
+            <p>The <code>time_bonus</code> field awards a bonus for solving problems faster. The field is in minutes, and for each such interval of time before the contest ends, any submission with a non-zero score will have a bonus point added. This field defaults to 5. Note that specifying 0 will disable this bonus.</p>
+            <p>For example, say a submission with a score of 50/100 is submitted 23 minutes before the contest ends. &lfloor;23/5&rfloor; = 4, so 4 bonus points are awarded, giving a total score of 50 + 4 = 54 for that problem.</p>
+            <h2>AtCoder</h2>
+            <p>The <code>AtCoder</code> contest format is based on the contest format used by AtCoder.</p>
+            <p>The score is equal to the sum of the highest-scoring submission on each problem, and ties are broken based on the time of the last score-changing submission plus the penalty.</p>
+            <p>The penalty is specified by the <code>penalty</code> field, and defaults to 5 minutes. The penalty is equal to the total number of incorrect submissions prior to the highest-scoring submission on each solved problem, multiplied by the specified value, in minutes, and is added to the cumulative time.</p>
+            <h2>ICPC</h2>
+            <p>The <code>ICPC</code> contest format is based on the contest format used by the ICPC.</p>
+            <p>The score is equal to the number of problems solved, and ties are broken firstly based on the sum of the elapsed time that a correct submission was submitted to each problem plus the penalty, and secondly based on the time of the last score-changing submission.</p>
+            <p>The penalty is specified by the <code>penalty</code> field, and defaults to 20 minutes. The penalty is equal to the number of incorrect submissions prior to the first correct submission, multiplied by the specified value, in minutes, and is added to the cumulative time. Note that the time penalty is applied to all problems with a non-zero score (this format will not automatically disable partial points).</p>
+        </div>
+
+        <div class="doc-section" id="permission-system">
+            <h1>Permission system</h1>
+            <p>The FreateOJ's permission system is very extensive and allows fine-tuning a user's permissions. Here, we will document which permissions are required to perform certain tasks on the site. Any undocumented models means that they follow Django's default permission system of (<code>can_add_&lt;model&gt;</code>, <code>can_change_&lt;model&gt;</code>, <code>can_delete_&lt;model&gt;</code>, and <code>can_view_&lt;model&gt;</code>).</p>
+            <h2>Blog posts</h2>
+            <p>Blog posts follow Django's default permission system.</p>
+            <h4><code>edit_all_post</code> (Edit all posts)</h4>
+            <p><strong>Prerequisite permissions</strong>: <code>change_blogpost</code></p>
+            <p>The user can edit all blog posts on the admin site.</p>
+            <h2>Comments</h2>
+            <p>Comments and comment locks follow Django's default permission system.</p>
+            <h4><code>override_comment_lock</code> (Override comment lock)</h4>
+            <p>The user can post comments on pages which are comment locked.</p>
+            <h2>Contests</h2>
+            <p>Contest participations, contest problems, contest submissions, and contest tags follow Django's default permission system.</p>
+            <h4><code>see_private_contest</code> (See private contests)</h4>
+            <p>The user can see all contests without explicitly set as organizer. The user will also be able to see hidden scoreboards. However, they will <em>not</em> be able to edit contests on the admin site.</p>
+            <h4><code>edit_own_contest</code> (Edit own contests)</h4>
+            <p>The user can edit contests on the admin site, but only if they are explicitly set as organizer.</p>
+            <h4><code>edit_all_contest</code> (Edit all contests)</h4>
+            <p><strong>Prerequisite permissions: <code>edit_own_contest</code></strong></p>
+            <p><strong>Superseded permissions: <code>see_private_contest</code></strong></p>
+            <p>The user can see and edit all contests on the admin site without explicitly set as organizer.</p>
+            <h4><code>clone_contest</code> (Clone contest)</h4>
+            <p>The user can clone contests that they can edit on the admin site.</p>
+            <h4><code>moss_contest</code> (MOSS contest)</h4>
+            <p>The user can run MOSS on contests that they can edit on the admin site.</p>
+            <h4><code>contest_rating</code> (Rate contests)</h4>
+            <p>The user can edit rating-related fields on the contest admin page, and rate the contest.</p>
+            <h4><code>contest_access_code</code> (Contest access codes)</h4>
+            <p>The user can edit the <code>access_code</code> field on the contest admin page.</p>
+            <h4><code>create_private_contest</code> (Create private contests)</h4>
+            <p>The user can create organization-private and user-private contests. The user can also edit the <code>is_visible</code> field on the contest admin page as long as the contest is organization-private or user-private.</p>
+            <h4><code>change_contest_visibility</code> (Change contest visibility)</h4>
+            <p>The user can edit the <code>is_visible</code> field on the contest admin page.</p>
+            <h4><code>contest_problem_label</code> (Edit contest problem label script)</h4>
+            <p>The user can edit the contest problem label script on the contest admin page. The contest problem label script is a LUA script for customizing the header for each problem on the scoreboard.</p>
+            <h4><code>lock_contest</code> (Change lock status of contest)</h4>
+            <p>The user will be able to lock and unlock submissions from a contest. Note that this permission does not require the <code>lock_submission</code> permission. See the <code>lock_submission</code> permission for more details on what locking a submission entails.</p>
+            <h2>Organizations</h2>
+            <p>Organizations follow Django's default permission system.</p>
+            <h4><code>organization_admin</code> (Administer organizations)</h4>
+            <p>The user can edit <code>registrant</code>, <code>admins</code>, <code>is_open</code>, <code>slots</code> fields on the admin site.</p>
+            <h4><code>edit_all_organization</code> (Edit all organizations)</h4>
+            <p><strong>Prerequisite permissions: <code>change_organization</code></strong></p>
+            <p>The user can edit all organizations.</p>
+            <h2>Problems</h2>
+            <h4><code>see_organization_problem</code> (See organization-private problems)</h4>
+            <p>The user can see organization-private (but public) problems.</p>
+            <h4><code>see_private_problem</code> (See hidden problems)</h4>
+            <p><strong>Superseded permissions: <code>see_organization_problem</code></strong></p>
+            <p>The user can see all problems. However, they will <em>not</em> be able to edit problems on the admin site or view submission source code.</p>
+            <h4><code>edit_own_problem</code> (Edit own problems)</h4>
+            <p>The user can edit problems on the admin site, but only if they are explicitly set as author or curator. They will also be able to view submission source code for these problems.</p>
+            <h4><code>edit_public_problem</code> (Edit public problems)</h4>
+            <p><strong>Prerequisite permissions: <code>edit_own_problem</code></strong></p>
+            <p>The user can edit problems on the admin site, but only if the problem is publicly visible. Note that this includes all problems which are marked as public, regardless of whether they are only public to specific organizations or everyone. They will also be able to view submission source code for these problems.</p>
+            <h4><code>edit_all_problem</code> (Edit all problems)</h4>
+            <p><strong>Prerequisite permissions: <code>edit_own_problem</code></strong></p>
+            <p><strong>Superseded permissions: <code>see_private_problem</code>, <code>edit_public_problem</code>, <code>view_all_submission</code></strong></p>
+            <p>The user can see and edit all problems on the admin site.</p>
+            <h4><code>problem_full_markup</code> (Edit problems with full markup)</h4>
+            <p>The user will be able to edit the description of problems which offer full markup. Full markup includes access to all HTML tags, including the <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code> tags. Without this permission, the user will only be able to edit problems whose description offers a safe, limited subset of HTML tags.</p>
+            <h4><code>clone_problem</code> (Clone problem)</h4>
+            <p>The user can clone problems that they can edit.</p>
+            <h4><code>change_public_visibility</code> (Change is_public field)</h4>
+            <p>The user can change the <code>is_public</code> field.</p>
+            <h4><code>change_manually_managed</code> (Change is_manually_managed field)</h4>
+            <p>The user can change the <code>is_manually_managed</code> field.</p>
+            <h3>Problem solutions</h3>
+            <p>Problem solutions follow Django's default permission system.</p>
+            <h4><code>see_private_solution</code> (See hidden solutions)</h4>
+            <p>The user can see all problem solutions for problems they can access, regardless of if the solution is public or not.</p>
+            <h2>Profile</h2>
+            <p>Profiles follow Django's default permission system.</p>
+            <h4><code>totp</code> (Edit TOTP settings)</h4>
+            <p>The user can see and edit TOTP-related fields, such as a user's TOTP key.</p>
+            <h2>Submissions</h2>
+            <p>Submission visibility and editability are determined by problem permissions. If the user can edit the problem, they can also edit related submissions. No user can add submissions, and deleting permissions follow Django's default permission system.</p>
+            <h4><code>abort_any_submission</code> (Abort any submission)</h4>
+            <p>The user can abort any submission. Without this permission, the user can only abort submissions that they have submitted and which have not been rejudged.</p>
+            <h4><code>rejudge_submission</code> (Rejudge the submission)</h4>
+            <p><strong>Prerequisite permissions: <code>edit_own_problem</code></strong></p>
+            <p>The user can rejudge submissions for problems they can edit.</p>
+            <h4><code>rejudge_submission_lot</code> (Rejudge a lot of submissions)</h4>
+            <p><strong>Prerequisite permissions: <code>rejudge_submission</code></strong></p>
+            <p>The user can batch-rejudge submissions, and bypass the <code>FREATEOJ_SUBMISSIONS_REJUDGE_LIMIT</code> setting.</p>
+            <h4><code>spam_submission</code> (Submit without limit)</h4>
+            <p>The user can bypass the <code>FREATEOJ_SUBMISSION_LIMIT</code> setting, meaning they can have an infinite number of non-rejudged submissions queued.</p>
+            <h4><code>view_all_submission</code> (View all submission)</h4>
+            <p>The user can view submissions for all problems, but <em>cannot</em> edit them on the admin site.</p>
+            <h4><code>resubmit_other</code> (Resubmit others' submission)</h4>
+            <p>The user can resubmit submissions by other users.</p>
+            <h4><code>lock_submission</code> (Change lock status of submission)</h4>
+            <p>The user will be able to lock and unlock submissions. Locked submissions will not be rejudgeable by anyone (including superusers) until they are unlocked.</p>
+        </div>
+
+        <div class="doc-section" id="managing-problems">
+            <h1>Managing problems through the site interface</h1>
+            <p>The FreateOJ comes with an online interface for creating and editing problem statements as well as data. This guide is intended as an introduction to using these features for creating your own problems.</p>
+            <h2>Configuring site-managed data</h2>
+            <p>Set <code>FREATEOJ_PROBLEM_DATA_ROOT</code> to a folder of your choice. The test data for all problems with site-managed data will be stored within this folder.</p>
+            <h2>Adding a problem</h2>
+            <p>To start, head to the admin site and use your credentials to log in. Once there, click the <em>Add</em> button on the <em>Problems</em> menu.</p>
+            <p>This will open up the main problem editor. To start, you should provide a problem code (must be unique site-wide), and a title for your problem. <strong>Make sure to mark yourself as an author</strong>, as otherwise you will be locked out of your problem.</p>
+            <p>Here you may edit your problem statement. The FreateOJ features a rich Markdown-based syntax, with custom extensions for LaTeX-based display math, and Mathjax-based inline math. See the sample problem markdown file for a full feature example (you may copy/paste its content into your editor).</p>
+            <p>There are many options controlling your problem described in the editor, that you may use to customize the execution of your problem.</p>
+            <p>Once you are done preparing your statement, click the <em>Save</em> button, then scroll up to the top of the page and click the <em>View on site</em> button.</p>
+            <h2>Editing test data</h2>
+            <p>Internally, the FreateOJ uses a YAML-based format for describing problem data, which you may read about in the problem format documentation. The site provides an interface for managing problem data, removing the need to drop down to YAML configuration for most problems.</p>
+            <p>On the problem page, click the <em>Edit test data</em> link to open up the test data editor.</p>
+            <p>In the editor, you must first upload a zip archive containing the input/output data used for your problem. The typical convention is to use text files ending with a <code>.in</code> extension for input files, and <code>.out</code> for output files, with the test case number embedded in the filename.</p>
+            <p>For example, for a problem with a code of <code>testp1</code>, the first test case would be named <code>testp1.1.in</code>, with an output file <code>testp1.1.out</code>.</p>
+            <p>Using this format is <strong>not</strong> necessary &mdash; the judge will accept any filenames &mdash; but using it will allow the test data editor to autocomplete paths, saving some manual input.</p>
+            <p>There are many other options, but for most problems, only one more is necessary: the per-case point value. If partial points are enabled in the problem statement editor, then a user's score on the problem is equal to the sum of the point values of the cases they got right divided by the total sum of case point values, multiplied by the number of points the problem is worth.</p>
+            <p>For example, if your problem is worth 100 points and has 3 cases weighted 1/2/7 points respectively, a user who gets the first two cases correct and then fails the last one will have a score of 30 points, out of 100.</p>
+            <h2>Submitting to a problem</h2>
+            <p>After you have created your test data, you should head back to the problem and click the <em>Submit solution</em> button. If at any point in time you need to update your data, you may do so from the test data editor, and it will update automatically.</p>
+        </div>
+
+        <div class="doc-section" id="api">
+            <h1>API</h1>
+            <blockquote><p>!?> Untested on FreateOJ</p></blockquote>
+            <p>FreateOJ supports a simple JSON API for accessing most data used by the backend. Access to the API makes use of API tokens.</p>
+            <h2>API tokens</h2>
+            <p>FreateOJ supports API tokens for accessing the majority of the site as your native user. The admin portion of the site is left intentionally inaccessible with these tokens. You may generate an API token on your <em>Edit profile</em> page. To use, include the following header with every request where <code>&lt;API Token&gt;</code> is your API token:</p>
+<pre><code class="language-http">Authorization: Bearer &lt;API Token&gt;
+</code></pre>
+            <h3>Error responses</h3>
+            <p>The following error codes may be returned by the API token authentication layer. Note that the site itself may return other codes not listed here or identical codes with different error messages, so read the error messages carefully.</p>
+            <ul>
+                <li><code>400 Invalid authorization header</code> - The <strong>header</strong> you provided is invalid. Make sure it matches the following regex: <code>Authorization: Bearer ([a-zA-Z0-9_-]{48})</code></li>
+                <li><code>401 Invalid token</code> - The <strong>token</strong> you provided is invalid. Make sure it matches the one on your <em>Edit profile</em> page.</li>
+                <li><code>403 Admin inaccessible</code> - You are trying to access the inaccessible admin portion of the site.</li>
+            </ul>
+            <h2>Rate limiting</h2>
+            <p><strong>90 requests per minute</strong></p>
+            <p>If you exceed this limit, you will be captcha'd. Captchas are automatically removed after 3 days. However, note that if you are captcha'd again within this 3 day period, the 3 day counter will reset.</p>
+            <p><strong>Note</strong>: This is only a feature on FreateOJ.</p>
+            <h2>Format</h2>
+            <p>All responses are of the following structure:</p>
+<pre><code class="language-json">{
+    "api_version": "2.0",
+    "method": "&lt;HTTP method that was used&gt;",
+    "fetched": "&lt;time that the request was made in ISO format&gt;",
+    "data": "&lt;rest of the data&gt;",
+    "error": "&lt;any errors that were encountered&gt;"
+}
+</code></pre>
+            <p>It is guaranteed that only one of <code>data</code> or <code>error</code> will be in the response.</p>
+            <h3>Error format</h3>
+<pre><code class="language-json">{
+    "error": {
+        "code": "&lt;HTTP status code&gt;",
+        "message": "&lt;error message&gt;"
+    }
+}
+</code></pre>
+            <h3>Data format</h3>
+            <p>The data format differs depending on the endpoint called. For endpoints that respond with a single object:</p>
+<pre><code class="language-json">{
+    "data": {
+        "object": "&lt;object data&gt;"
+    }
+}
+</code></pre>
+            <p>For endpoints that respond with a list of objects:</p>
+<pre><code class="language-json">{
+    "data": {
+        "current_object_count": "&lt;number of objects in the current page&gt;",
+        "objects_per_page": "&lt;maximum number of objects that will ever appear on a single page&gt;",
+        "total_objects": "&lt;total number of objects in the list&gt;",
+        "page_index": "&lt;the current page's index, one indexed&gt;",
+        "total_pages": "&lt;total number of pages&gt;",
+        "objects": [
+            "&lt;list of object data&gt;"
+        ]
+    }
+}
+</code></pre>
+            <h3>Filtering</h3>
+            <p>Most of the API endpoints support filtering via query parameters. There are two types of filtering that are supported, basic filtering and list filtering. Basic filtering allows filtering for a single value, while list filtering allows filtering for a group of values. Each endpoint describes the filtering that it supports, with the name in a codeblock being the query parameter name.</p>
+            <p>Example of basic filtering: <code>/api/v2/problems?partial=True</code> - This will only return problems with partial points enabled.</p>
+            <p>Example of list filtering: <code>/api/v2/problems?organization=1&amp;organization=2&amp;type=Implementation</code> - This will only return problems (private to organizations 1 OR 2) AND (problem type is Implementation).</p>
+            <h2>Endpoints</h2>
+            <h3><code>/api/v2/contests</code></h3>
+            <p>Example: <code>/api/v2/contests?tag=seasonal&amp;tag=dmopc</code></p>
+            <h4>Basic filters</h4>
+            <ul><li><code>is_rated</code> - boolean</li></ul>
+            <h4>List filters</h4>
+            <ul><li><code>tag</code> - tag name</li><li><code>organization</code> - organization id</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "key": "&lt;contest key&gt;",
+    "name": "&lt;contest name&gt;",
+    "start_time": "&lt;contest start time in ISO format&gt;",
+    "end_time": "&lt;contest end time in ISO format&gt;",
+    "is_rated": "&lt;whether the contest is rated&gt;",
+    "rate_all": "&lt;whether the contest is rated on join&gt;",
+    "time_limit": "&lt;contest time limit in seconds, or null if the contest is not windowed&gt;",
+    "tags": ["&lt;list of tag name&gt;"]
+}
+</code></pre>
+            <h3><code>/api/v2/contest/&lt;contest key&gt;</code></h3>
+            <p>Example: <code>/api/v2/contest/bts19</code></p>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "key": "&lt;contest key&gt;",
+    "name": "&lt;contest name&gt;",
+    "start_time": "&lt;contest start time in ISO format&gt;",
+    "end_time": "&lt;contest end time in ISO format&gt;",
+    "time_limit": "&lt;contest time limit in seconds, or null if the contest is not windowed&gt;",
+    "is_rated": "&lt;whether the contest is rated&gt;",
+    "rate_all": "&lt;whether the contest is rated on join&gt;",
+    "has_rating": "&lt;whether the contest has been rated&gt;",
+    "rating_floor": "&lt;the minimum user rating required for the user to be rated&gt;",
+    "rating_ceiling": "&lt;the maximum user rating for the user to be rated&gt;",
+    "hidden_scoreboard": "&lt;whether the contest's scoreboard is hidden&gt;",
+    "scoreboard_visibility": "&lt;whether the scoreboard is (V)isible, visible after (C)ontest, or visible after (P)articipation&gt;",
+    "is_organization_private": "&lt;whether the contest is private to organizations&gt;",
+    "organizations": ["&lt;list of organization id&gt;"],
+    "is_private": "&lt;whether the contest is private to specific users&gt;",
+    "tags": ["&lt;list of tag name&gt;"],
+    "format": {
+        "name": "&lt;the name of the contest format&gt;",
+        "config": "&lt;the contest format JSON configuration&gt;"
+    },
+    "problems": [
+        {
+            "points": "&lt;the integer amount of points the problem is worth in contest&gt;",
+            "partial": "&lt;whether it is possible to achieve partial points on the problem&gt;",
+            "is_pretested": "&lt;whether the problem is pretested&gt;",
+            "max_submissions": "&lt;the maximum number of submissions allowed, or null if there is no limit&gt;",
+            "label": "&lt;the label for this problem&gt;",
+            "name": "&lt;problem name&gt;",
+            "code": "&lt;problem code&gt;"
+        }
+    ],
+    "rankings": [
+        {
+            "user": "&lt;participant username&gt;",
+            "start_time": "&lt;effective participation start time in ISO format&gt;",
+            "end_time": "&lt;participation end time in ISO format&gt;",
+            "score": "&lt;participant score&gt;",
+            "cumulative_time": "&lt;participant cumulative time, dependent on the contest format&gt;",
+            "tiebreaker": "&lt;participant tiebreaker value&gt;",
+            "old_rating": "&lt;participant rating before the contest, or null if not rated&gt;",
+            "new_rating": "&lt;participant rating after the contest, or null if not rated&gt;",
+            "is_disqualified": "&lt;whether this participant is disqualified&gt;",
+            "solutions": ["&lt;list of contest format-dependent dictionaries for individual problem scores&gt;"]
+        }
+    ]
+}
+</code></pre>
+            <h3><code>/api/v2/participations</code></h3>
+            <p>Example: <code>/api/v2/participations?contest=dmopc19c6&amp;virtual_participation_number=0&amp;is_disqualified=True</code></p>
+            <h4>Basic filters</h4>
+            <ul><li><code>contest</code> - contest key</li><li><code>user</code> - user username</li><li><code>is_disqualified</code> - boolean</li><li><code>virtual_participation_number</code> - non-negative integer</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "user": "&lt;participant username&gt;",
+    "contest": "&lt;contest key&gt;",
+    "start_time": "&lt;effective participation start time in ISO format&gt;",
+    "end_time": "&lt;participation end time in ISO format&gt;",
+    "score": "&lt;participant score&gt;",
+    "cumulative_time": "&lt;participant cumulative time, dependent on the contest format&gt;",
+    "tiebreaker": "&lt;participant tiebreaker value&gt;",
+    "is_disqualified": "&lt;whether this participant is disqualified&gt;",
+    "virtual_participation_number": "&lt;virtual participation number&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/problems</code></h3>
+            <p>Example: <code>/api/v2/problems?partial=True&amp;type=Uncategorized</code></p>
+            <h4>Basic filters</h4>
+            <ul><li><code>partial</code> - boolean</li></ul>
+            <h4>List filters</h4>
+            <ul><li><code>group</code> - problem group full name</li><li><code>type</code> - problem type full name</li><li><code>organization</code> - organization id</li></ul>
+            <h4>Additional filters</h4>
+            <ul><li><code>search</code> - similar to a list filter, except searches for the list of parameters in the problem's name, code, and description.</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "code": "&lt;problem code&gt;",
+    "name": "&lt;problem name&gt;",
+    "types": ["&lt;list of type full name&gt;"],
+    "group": "&lt;problem group full name&gt;",
+    "points": "&lt;problem points&gt;",
+    "partial": "&lt;whether partials are enabled for this problem&gt;",
+    "is_organization_private": "&lt;whether the problem is private to organizations&gt;",
+    "is_public": "&lt;whether the problem is publicly visible&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/problem/&lt;problem code&gt;</code></h3>
+            <p>Example: <code>/api/v2/problem/helloworld</code></p>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "code": "&lt;problem code&gt;",
+    "name": "&lt;problem name&gt;",
+    "authors": ["&lt;list of author username&gt;"],
+    "types": ["&lt;list of type full name&gt;"],
+    "group": "&lt;problem group full name&gt;",
+    "time_limit": "&lt;problem time limit&gt;",
+    "memory_limit": "&lt;problem memory limit&gt;",
+    "language_resource_limits": [
+        {
+            "language": "&lt;language key&gt;",
+            "time_limit": "&lt;language-specific time limit&gt;",
+            "memory_limit": "&lt;language-specific memory limit&gt;"
+        }
+    ],
+    "points": "&lt;problem points&gt;",
+    "partial": "&lt;whether partials are enabled for this problem&gt;",
+    "short_circuit": "&lt;whether short circuit is enabled for this problem&gt;",
+    "languages": ["&lt;list of language key&gt;"],
+    "is_organization_private": "&lt;whether the problem is private to organizations&gt;",
+    "organizations": ["&lt;list of organization id&gt;"],
+    "is_public": "&lt;whether the problem is publicly visible&gt;"
+}
+</code></pre>
+            <h4>Additional info</h4>
+            <p><code>is_public</code>: Whether the problem is publicly visible to the organizations listed. If <code>is_organization_private</code> is <code>false</code>, the problem is visible to all users.</p>
+            <h3><code>/api/v2/users</code></h3>
+            <p>Example: <code>/api/v2/users?organization=8</code></p>
+            <h4>List filters</h4>
+            <ul><li><code>organization</code> - organization id</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "id": "&lt;user id&gt;",
+    "username": "&lt;user username&gt;",
+    "points": "&lt;user points&gt;",
+    "performance_points": "&lt;user performance points&gt;",
+    "problem_count": "&lt;number of problems the user has solved&gt;",
+    "rank": "&lt;user display rank&gt;",
+    "rating": "&lt;user rating&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/user/&lt;user username&gt;</code></h3>
+            <p>Example: <code>/api/v2/user/Xyene</code></p>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "id": "&lt;user id&gt;",
+    "username": "&lt;user username&gt;",
+    "points": "&lt;user points&gt;",
+    "performance_points": "&lt;user performance points&gt;",
+    "problem_count": "&lt;number of problems the user has solved&gt;",
+    "solved_problems": ["&lt;list of problem code&gt;"],
+    "rank": "&lt;user display rank&gt;",
+    "rating": "&lt;user rating&gt;",
+    "organizations": ["&lt;list of organization id&gt;"],
+    "contests": [
+        {
+            "key": "&lt;contest key&gt;",
+            "score": "&lt;user score&gt;",
+            "cumulative_time": "&lt;user cumulative time, dependent on the contest format&gt;",
+            "rating": "&lt;user rating after this contest, or null if not rated&gt;",
+            "raw_rating": "&lt;user raw rating after this contest, or null if not rated&gt;",
+            "performance": "&lt;user performance, or null if not rated&gt;"
+        }
+    ]
+}
+</code></pre>
+            <h3><code>/api/v2/submissions</code></h3>
+            <p>Example: <code>/api/v2/submissions?user=Ninjaclasher</code></p>
+            <h4>Basic filters</h4>
+            <ul><li><code>user</code> - user username</li><li><code>problem</code> - problem code</li></ul>
+            <h4>List filters</h4>
+            <ul><li><code>language</code> - language key</li><li><code>result</code> - string</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "id": "&lt;submission id&gt;",
+    "problem": "&lt;problem code&gt;",
+    "user": "&lt;user username&gt;",
+    "date": "&lt;submission date in ISO format&gt;",
+    "language": "&lt;language key&gt;",
+    "time": "&lt;submission time usage&gt;",
+    "memory": "&lt;submission memory usage&gt;",
+    "points": "&lt;submission points awarded&gt;",
+    "result": "&lt;submission result&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/submission/&lt;submission id&gt;</code></h3>
+            <p>Example: <code>/api/v2/submission/1000000</code></p>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "id": "&lt;submission id&gt;",
+    "problem": "&lt;problem code&gt;",
+    "user": "&lt;user username&gt;",
+    "date": "&lt;submission date in ISO format&gt;",
+    "time": "&lt;submission time usage&gt;",
+    "memory": "&lt;submission memory usage&gt;",
+    "points": "&lt;submission points awarded&gt;",
+    "language": "&lt;language key&gt;",
+    "status": "&lt;submission status&gt;",
+    "result": "&lt;submission result&gt;",
+    "case_points": "&lt;submission case points&gt;",
+    "case_total": "&lt;submission case total&gt;",
+    "cases": ["&lt;list of case or batch data&gt;"]
+}
+</code></pre>
+            <h4>Additional info</h4>
+            <p><code>case or batch data</code>: Each object will be one of the following, depending on whether the current case is a batch or a single test case:</p>
+            <h4>Case data</h4>
+<pre><code class="language-json">{
+    "type": "case",
+    "case_id": "&lt;case id&gt;",
+    "status": "&lt;case status&gt;",
+    "time": "&lt;case time usage&gt;",
+    "memory": "&lt;case memory usage&gt;",
+    "points": "&lt;case points awarded&gt;",
+    "total": "&lt;case total points&gt;"
+}
+</code></pre>
+            <h4>Batch data</h4>
+<pre><code class="language-json">{
+    "type": "batch",
+    "batch_id": "&lt;batch id&gt;",
+    "cases": ["&lt;list of case data&gt;"],
+    "points": "&lt;batch points awarded&gt;",
+    "total": "&lt;batch total points&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/organizations</code></h3>
+            <p>Example: <code>/api/v2/organizations?is_open=False</code></p>
+            <h4>Basic filters</h4>
+            <ul><li><code>is_open</code> - boolean</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "id": "&lt;organization id&gt;",
+    "slug": "&lt;organization slug&gt;",
+    "short_name": "&lt;organization name&gt;",
+    "is_open": "&lt;whether anyone can join the organization&gt;",
+    "member_count": "&lt;number of users in the organization&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/languages</code></h3>
+            <p>Example: <code>/api/v2/languages?common_name=Python</code></p>
+            <h4>Basic filters</h4>
+            <ul><li><code>common_name</code> - language common name</li></ul>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "id": "&lt;language id&gt;",
+    "key": "&lt;language key&gt;",
+    "short_name": "&lt;language short name&gt;",
+    "common_name": "&lt;language common name&gt;",
+    "ace_mode_name": "&lt;Ace mode name&gt;",
+    "pygments_name": "&lt;Pygments name&gt;",
+    "code_template": "&lt;default code template&gt;"
+}
+</code></pre>
+            <h3><code>/api/v2/judges</code></h3>
+            <p>Example: <code>/api/v2/judges</code></p>
+            <h4>Object response</h4>
+<pre><code class="language-json">{
+    "name": "&lt;judge name&gt;",
+    "start_time": "&lt;judge start time in ISO format&gt;",
+    "ping": "&lt;judge ping in milliseconds&gt;",
+    "load": "&lt;judge load&gt;",
+    "languages": ["&lt;list of language key&gt;"]
+}
+</code></pre>
+        </div>
+
+        <div class="doc-section" id="mathoid">
+            <h1>Rendering LaTeX math in problem statements</h1>
+            <blockquote><p><strong>Warning:</strong> Untested on FreateOJ</p></blockquote>
+            <p>The FreateOJ platform is capable of rendering LaTeX math for constraints and formulas that may appear in problem statements.</p>
+            <p>The FreateOJ makes use of the Wikimedia Mathoid project to render math.</p>
+            <h2>Installing Mathoid</h2>
+            <p>Follow the installation instructions of Mathoid. Moving forward, we'll assume that you are running Mathoid on <code>localhost:8888</code>.</p>
+            <h2>Configuring FreateOJ to use Mathoid</h2>
+            <p>Assuming Mathoid is installed, configuring FreateOJ to generate math with it requires the addition of a few lines to <code>local_settings.py</code>.</p>
+<pre><code class="language-python"># The URL Mathoid is running on.
+MATHOID_URL = 'http://localhost:8888'
+
+# A directory accessible by the user running Mathoid, as well as the web (nginx) user.
+# For optimal performance, change this to something more persistent than /tmp.
+MATHOID_CACHE_ROOT = '/tmp/mathoid_cache'
+
+# The URL base MATHOID_CACHE_ROOT is configured to be served under in your webserver. For
+# example, if /tmp/mathoid_cache/render.png exists, example.com/mathoid/render.png should
+# serve it.
+MATHOID_CACHE_URL = '//example.com/mathoid/'
+</code></pre>
+            <p>Restart FreateOJ for the changes to take effect. After restarting, you may have to purge Django's cache before seeing any changes.</p>
+            <h2>Using Mathoid math in problem statements</h2>
+            <p>A snippet of a problem statement using Mathoid to render math is shown below.</p>
+<pre><code class="language-markdown">The Fibonacci sequence is a well known sequence of numbers in which
+
+$$F(n) = \begin{cases} 0, &amp; \text{if } n = 0 \\ 1, &amp; \text{if } n = 1 \\ F(n-2) + F(n-1), &amp; \text{if } n \ge 2 \end{cases}$$
+
+Given a number ~N~ ~(1 \le N \le 10^{19})~, find the ~N^{th}~ Fibonacci number, modulo ~1\,000\,000\,007~ ~(= 10^9 + 7)~.
+**Note:** For 30% of the marks of this problem, it is guaranteed that ~(1 \le N \le 1\,000\,000)~.
+</code></pre>
+        </div>
+
+        <div class="doc-section" id="texoid">
+            <h1>Rendering LaTeX diagrams in problem statements</h1>
+            <blockquote><p><strong>Warning:</strong> Untested on FreateOJ</p></blockquote>
+            <p>The FreateOJ platform is capable of rendering LaTeX documents onto problem statements. This can be useful for things like drawing graphs with ease, porting over PDF resources, and so on.</p>
+            <p>FreateOJ supports this through a related project, Texoid. Texoid interfaces with texlive to provide a REST endpoint for LaTeX rendering.</p>
+            <h2>Installing Texoid</h2>
+            <p>First, clone the Texoid repository, and install it and its dependencies into a new virtualenv.</p>
+<pre><code class="language-shell-session">$ git clone Texoid repository
+$ cd texoid
+$ python3 -m venv env
+$ . env/bin/activate
+$ pip install -e .
+</code></pre>
+            <p>Texoid relies on LaTeX distribution to render documents to DVI format, <code>dvisvgm</code> to convert to SVGs, and ImageMagick to convert SVGs into PNGs. On a typical Debian or Ubuntu machine, you can fetch everything you need with:</p>
+<pre><code class="language-shell-session">$ apt install texlive-latex-base texlive-binaries imagemagick
+</code></pre>
+            <h2>Running Texoid</h2>
+            <p>To start the Texoid server, run:</p>
+<pre><code class="language-shell-session">$ export LATEX_BIN=&lt;path to latex&gt;
+$ export DVISVGM_BIN=&lt;path to dvisvgm&gt;
+$ export CONVERT_BIN=&lt;path to convert&gt;
+$ env/bin/texoid --port=&lt;port&gt;
+</code></pre>
+            <p>The environment variables are not necessary if all three executables are present in <code>$PATH</code>, as they should be if you followed the installation instructions above. Here, convert refers to ImageMagick's <code>convert</code> tool.</p>
+            <p>To test, start Texoid with <code>--port=8886</code>. Then, we can request a render of a simple LaTeX document.</p>
+<pre><code class="language-latex">\documentclass{standalone}
+\begin{document}
+$E=mc^2$
+\end{document}
+</code></pre>
+            <p>The response should contain JSON, with SVG and a Base64-encoded PNG inside.</p>
+<pre><code class="language-shell-session">$ curl --data 'q=%5Cdocumentclass%7Bstandalone%7D%0A%5Cbegin%7Bdocument%7D%0A%24E%3Dmc%5E2%24%0A%5Cend%7Bdocument%7D' http://localhost:8886
+{
+    "success": true,
+    "svg": "&lt;?xml version='1.0'?&gt;&lt;svg...&lt;/svg&gt;",
+    "png": "iVBORw0KGgoA...kSuQmCC\n",
+    "meta": {
+        "width": "48",
+        "height": "10"
+    }
+}
+</code></pre>
+            <h2>Configuring FreateOJ to use Texoid</h2>
+            <p>Once Texoid is installed, configuring FreateOJ to generate LaTeX diagrams with it requires the addition of a few lines to <code>local_settings.py</code>.</p>
+<pre><code class="language-python"># The URL Texoid is running on.
+TEXOID_URL = 'http://localhost:8886'
+
+# A directory accessible by the user running Texoid, as well as the web (nginx)
+# user.
+#
+# For optimal performance (since launching texlive is expensive), change this
+# to something more persistent than /tmp.
+TEXOID_CACHE_ROOT = '/tmp/texoid_cache'
+
+# The URL base TEXOID_CACHE_ROOT is configured to be served under in your
+# webserver. For example, if /tmp/texoid_cache/render.png exists,
+# example.com/texoid/render.png should serve it.
+TEXOID_CACHE_URL = '//example.com/texoid/'
+</code></pre>
+            <p>Restart FreateOJ for the changes to take effect. After restarting, you may have to purge Django's cache before seeing any changes.</p>
+            <h2>Using LaTeX diagrams in problem statements</h2>
+            <p>To invoke Texoid to generate LaTeX diagrams, wrap your LaTeX code in <code>&lt;latex&gt;</code> blocks.</p>
+<pre><code class="language-markdown">## This is a LaTeX Demo
+
+The diagram below is **real LaTeX!**
+
+&lt;latex&gt;
+\documentclass{standalone}
+\begin{document}
+$E=mc^2$
+\end{document}
+&lt;/latex&gt;
+</code></pre>
+            <p>Typically, <code>\documentclass{standalone}</code> works best for inlining diagrams.</p>
+        </div>
+
+        <div class="doc-section" id="pdfoid">
+            <h1>PDF generation of problem statements</h1>
+            <p>The FreateOJ supports rendering problem statements to PDF. This can be useful in the case of on-site contests, where contestants receive paper versions of the problems.</p>
+            <p>PDF generation is backed by a related project, Pdfoid. Pdfoid interfaces with Selenium to provide a REST endpoint for PDF rendering.</p>
+            <h2>Installing Pdfoid</h2>
+            <p>First, clone the Pdfoid repository, and install it and its dependencies into a new virtualenv.</p>
+<pre><code class="language-shell-session">$ git clone Pdfoid repository
+$ cd pdfoid
+$ python3 -m venv env
+$ . env/bin/activate
+$ pip install -e .
+</code></pre>
+            <p>Install <code>exiftool</code>, which is used to set PDF titles.</p>
+<pre><code class="language-shell-session">$ apt install exiftool
+</code></pre>
+            <p>Install ChromeDriver, a special version of the Chromium engine needed by Selenium to create PDFs.</p>
+<pre><code class="language-shell-session">$ apt install chromium-driver
+</code></pre>
+            <h2>Running Pdfoid</h2>
+            <p>To start the Pdfoid server, run:</p>
+<pre><code class="language-shell-session">$ export CHROME_PATH=&lt;path to chrome&gt;
+$ export CHROMEDRIVER_PATH=&lt;path to chromedriver&gt;
+$ export EXIFTOOL_PATH=&lt;path to exiftool&gt;
+$ env/bin/pdfoid --port=&lt;port&gt;
+</code></pre>
+            <p>The environment variables are not necessary if all three executables are present in <code>$PATH</code>, as they should be if you followed the installation instructions above.</p>
+            <p>To test, start Pdfoid with <code>--port=8887</code>. Then, we can request a render of a simple HTML document.</p>
+<pre><code class="language-html">&lt;div&gt;Hello, World!&lt;/div&gt;
+</code></pre>
+            <p>The response should contain JSON, with a Base64-encoded PDF inside.</p>
+<pre><code class="language-shell-session">$ curl -d "title=Hello&amp;html=Hello, World" -X POST -H "Content-Type: application/x-www-form-urlencoded" http://localhost:8887
+{
+    "success": true,
+    "pdf": "JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PC9DcmVhdG9yIChDaHJvbWl1bSkK..."
+}
+</code></pre>
+            <blockquote><p><strong>Note:</strong> The FreateOJ uses a Segoe UI font when viewed on Windows browsers. If running Pdfoid on a Linux server, installing Segoe UI fonts on it will provide optimal rendering quality &mdash; otherwise, a fallback font will be used and statements will look subpar.</p></blockquote>
+            <h2>Configuration</h2>
+            <p>Configuring FreateOJ to generate PDFs with Pdfoid can be done by adding the following lines to your <code>local_settings.py</code>.</p>
+<pre><code class="language-python"># The URL Pdfoid is running on.
+FREATEOJ_PDF_PDFOID_URL = 'http://localhost:8887'
+
+# Optional, cache location for generated PDFs. You should consider using
+# something more persistent than /tmp, since PDF generation is an expensive
+# operation. If omitted, no cache will be used.
+FREATEOJ_PDF_PROBLEM_CACHE = '/tmp'
+
+# Optional, URL serving FREATEOJ_PDF_PROBLEM_CACHE with X-Accel-Redirect. This is
+# recommended to have nginx serve PDFs, rather than uWSGI. To enable this,
+# uncomment the line below, as well as the corresponding section in the sample
+# nginx configuration file.
+#FREATEOJ_PDF_PROBLEM_INTERNAL = '/pdfcache'
+</code></pre>
+            <p>Restart FreateOJ for the changes to take effect.</p>
+            <h2>Troubleshooting</h2>
+            <h3>"View as PDF" button doesn't show up</h3>
+            <p>If a "View as PDF" button does not show up on the problem page, make sure that the <code>FREATEOJ_PDF_PDFOID_URL</code> variable is set.</p>
+            <h3>"View as PDF" button shows up</h3>
+            <p>If a "View as PDF" button shows up, but generation fails, an error log should be displayed in the browser. This log will also be captured by the <code>judge.problem.pdf</code> Django log handler. Depending on the error, explicitly setting the Pdfoid environment variables <code>CHROME_PATH</code> to the path of the Chromium binary and <code>CHROMEDRIVER_PATH</code> to the path of the ChromeDriver binary may alleviate the problem.</p>
+            <p>For other errors, take a look at the Selenium documentation, specifically the common exceptions section.</p>
+        </div>
+
+        <div class="doc-section" id="recaptcha">
+            <h1>reCAPTCHA spam registration prevention</h1>
+            <blockquote><p><strong>Warning:</strong> Untested on FreateOJ</p></blockquote>
+            <p>If you run FreateOJ for any prolonged period of time, eventually spambots will begin registering in large numbers.</p>
+            <p>FreateOJ can integrate with reCAPTCHA to filter out spam registrations with a little setup.</p>
+            <h2>Getting an API key</h2>
+            <p>First, head to the reCAPTCHA admin site at Google reCAPTCHA admin site. Select "reCAPTCHA v2", specify your domain, and click through to get an API key pair.</p>
+            <p>In <code>local_settings.py</code>, set <code>RECAPTCHA_PUBLIC_KEY</code> to the site key, and <code>RECAPTCHA_PRIVATE_KEY</code> to the secret key.</p>
+            <h2>Installing reCAPTCHA support</h2>
+            <p>First, install <code>django-recaptcha2</code> in the site virtual environment.</p>
+<pre><code class="language-shell-session">(freateojsite) $ pip3 install django-recaptcha2
+</code></pre>
+            <p>Finally, open <code>local_settings.py</code> in your editor of choice, and add <code>snowpenguin.django.recaptcha2</code> to the end of <code>INSTALLED_APPS</code>.</p>
+            <p>Restart FreateOJ for the changes to take effect. You should now have an "I'm not a robot" checkbox on registration.</p>
+        </div>
+
+        <div class="doc-section" id="ssl-proxy">
+            <h1>SSL proxying for user content</h1>
+            <blockquote><p><strong>Warning:</strong> Untested on FreateOJ</p></blockquote>
+            <p>User-generated content (e.g., comments) poses a threat to site security, and can cause mixed-content warnings. If your site is served over HTTPS, this may be suboptimal - routing user content through a secure server can help.</p>
+            <p>The FreateOJ site provides support for this through the Github Camo project, which requires CoffeeScript to be installed (<code>apt install coffeescript</code>).</p>
+            <blockquote><p><strong>Warning:</strong> Setting up Camo on the same server as your site can leave you open to attacks, even if you are set up behind Cloudflare: a malicious user can link an image to their domain, have Camo access it, and then view their server logs to see the requesting IP (allowing them to attack you behind e.g. Cloudflare).</p>
+            <p>If this is important in your scenario, consider running Camo on a separate server.</p></blockquote>
+            <h2>Installing Camo to <code>/code</code></h2>
+<pre><code class="language-shell-session">$ cd /code
+$ git clone Camo repository camo
+</code></pre>
+            <p>Now, Camo may be started by running <code>/code/camo/server.coffee</code>.</p>
+<pre><code class="language-shell-session">$ PORT="&lt;port&gt;" CAMO_KEY="&lt;key&gt;" coffee /code/camo/server.coffee
+</code></pre>
+            <ul>
+                <li>Camo will listen on <code>&lt;port&gt;</code>.</li>
+                <li><code>&lt;key&gt;</code> is the HMAC secret key used for digests. Set it to anything you want. This is used for cache-busting purposes, so it does not need to be secure.</li>
+            </ul>
+            <h2>Configuring FreateOJ to use Camo</h2>
+            <p>To enable the use of Camo in the FreateOJ site, you need to specify a couple of variables in your <code>local_settings.py</code>.</p>
+<pre><code class="language-python"># The URL on which Camo is listening
+FREATEOJ_CAMO_URL = "https://example.com[:port]"
+# The key you specified for running Camo
+FREATEOJ_CAMO_KEY = "&lt;key&gt;"
+# Domains to exclude from Camo proxying. Typically, these would be your own domains which you use
+# for content delivery, and you know to already be secure.
+FREATEOJ_CAMO_EXCLUDE = ("https://oj.freate.io.vn",)
+# Whether Camo should use HTTPS for protocol neutral URIs (you probably want this)
+FREATEOJ_CAMO_HTTPS = True
+</code></pre>
+            <p>Restart FreateOJ for the changes to take effect. After restarting, you may have to purge Django's cache before seeing any changes.</p>
+        </div>
+
+        <div class="doc-section" id="contest-data-download">
+            <h1>Contest data downloads</h1>
+            <p>The FreateOJ allows contest authors to download contest data. At the time of writing, only submission data can be downloaded.</p>
+            <p>By default, this feature is disabled. To enable, uncomment the relevant settings in <code>local_settings.py</code>.</p>
+<pre><code class="language-python"># Uncomment to allow contest authors to download contest data
+FREATEOJ_CONTEST_DATA_DOWNLOAD = True
+
+# Directory to cache contest data downloads.
+# It is the administrator's responsibility to clean up old files.
+FREATEOJ_CONTEST_DATA_CACHE = '/home/freateoj-uwsgi/contestdatacache'
+
+# Path to use for nginx's X-Accel-Redirect feature.
+# Should be an internal location mapped to the above directory.
+FREATEOJ_CONTEST_DATA_INTERNAL = '/contestdatacache'
+
+# How often contest data can be exported.
+# This applies per contest, not per user.
+FREATEOJ_CONTEST_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
+</code></pre>
+            <p>Also, uncomment the relevant section in your Nginx configuration if you wish to take advantage of Nginx's X-Accel-Redirect feature (see nginx documentation).</p>
+<pre><code class="language-nginx"># Uncomment if you are allowing contest data downloads and want to serve it faster.
+# This location name should be set to FREATEOJ_CONTEST_DATA_INTERNAL.
+location /contestdatacache {
+    internal;
+    root &lt;path to data cache directory, without the final /contestdatacache&gt;;
+
+    # Default from local_settings.py:
+    #root /home/freateoj-uwsgi/;
+}
+</code></pre>
+            <p>These data files are not cleaned up automatically. Although each contest can have at most one data file stored on the server at a time, you may want to clean up old files. A Cron job should suffice:</p>
+<pre><code class="language-shell-session">0 */4 * * * find /home/freateoj-uwsgi/contestdatacache/ -type f -mtime +2 -delete
+</code></pre>
+            <p>This Cron job will delete files older than 2 days every 4 hours. You are recommended to tweak these values according to your ratelimit.</p>
+            <p>You should now find a link on your <em>Edit Profile</em> that allows you to download your data, along with various configuration options.</p>
+        </div>
+
+        <div class="doc-section" id="user-data-download">
+            <h1>User data downloads</h1>
+            <p>The FreateOJ allows users to download their data. At the time of writing, only user comment and submission data can be downloaded.</p>
+            <p>By default, this feature is disabled. To enable, uncomment the relevant settings in <code>local_settings.py</code>.</p>
+<pre><code class="language-python">## Data download settings.
+# Uncomment to allow users to download their data.
+FREATEOJ_USER_DATA_DOWNLOAD = True
+
+# Directory to cache user data downloads.
+# It is the administrator's responsibility to clean up old files.
+FREATEOJ_USER_DATA_CACHE = '/home/freateoj-uwsgi/userdatacache'
+
+# Path to use for nginx's X-Accel-Redirect feature.
+# Should be an internal location mapped to the above directory.
+FREATEOJ_USER_DATA_INTERNAL = '/userdatacache'
+
+# How often a user can download their data.
+FREATEOJ_USER_DATA_DOWNLOAD_RATELIMIT = datetime.timedelta(days=1)
+</code></pre>
+            <p>Also, uncomment the relevant section in your Nginx configuration if you wish to take advantage of Nginx's X-Accel-Redirect feature (see nginx documentation).</p>
+<pre><code class="language-nginx"># Uncomment if you are allowing user data downloads and want to serve it faster.
+# This location name should be set to FREATEOJ_USER_DATA_INTERNAL.
+location /userdatacache {
+    internal;
+    root &lt;path to data cache directory, without the final /userdatacache&gt;;
+
+    # Default from local_settings.py:
+    #root /home/freateoj-uwsgi/;
+}
+</code></pre>
+            <p>These data files are not cleaned up automatically. Although each user can have at most one data file stored on the server at a time, you may want to clean up old files. A Cron job should suffice:</p>
+<pre><code class="language-shell-session">0 */4 * * * find /home/freateoj-uwsgi/userdatacache/ -type f -mtime +2 -delete
+</code></pre>
+            <p>This cron job will delete files older than 2 days every 4 hours. You are recommended to tweak these values according to your ratelimit.</p>
+            <p>You should now find a link on your <em>Edit profile</em> that allows you to download your data, along with various configuration options.</p>
+        </div>
+
+        <div class="doc-section" id="judge-setup">
+            <h1>Setting up a judge</h1>
+            <p>This guide goes through the process of installing a judge and connecting it to the site. It is intended for Linux-based machines (WSL included); Windows is not supported.</p>
+            <p>It is assumed that the site installation instructions have been followed, and that a bridge instance is running.</p>
+            <h2>Site-side setup</h2>
+            <p>First, add a judge on the admin page, located under <code>/admin/judge/</code>. Provide the name of the judge and the authentication key for the judge. You may use the <code>Regenerate</code> button to generate an authentication key.</p>
+            <p>In <code>local_settings.py</code>, find the <code>BRIDGED_JUDGE_ADDRESS</code>. This is the address you will be connecting a judge to. By default, this should be <code>localhost:9999</code>. If you are connecting from a different machine, you will need to change <code>localhost</code> to an actual IP. Also, ensure that this port is <strong>open</strong>, or you will receive cryptic error messages when attempting to connect a judge.</p>
+            <p>Finally, ensure the bridge is running. You should see something similar to the following lines.</p>
+<pre><code class="language-shell-session">$ supervisorctl status
+bridged RUNNING pid &lt;pid&gt;, uptime &lt;uptime&gt;
+</code></pre>
+            <h2>Judge-side setup</h2>
+            <p>FreateOJ supports installing judges through Docker and a PyPI package. We recommend the Docker installation if you are able to use Docker, since we have dealt with the hard problem of getting many runtimes co-existing on the same machine and keeping them up-to-date. The PyPI package is also supported, and may give you more control at the expense of more administrative complexity.</p>
+            <h3>With Docker</h3>
+            <h4>Pre-built</h4>
+            <p>We maintain Docker images with all runtimes we support in the <a href="judge-server">judge-server</a> project.</p>
+            <p>Runtimes are split into three tiers of decreasing support. Tier 1 includes Python 2/3, C/C++ (GCC only), Java 8, and Pascal. Tier 3 contains all the runtimes we run on FreateOJ. Tier 2 contains some in-between mix; read the <code>Dockerfile</code> for each tier for details. These images are rebuilt and tested every week to contain the latest runtime versions.</p>
+            <blockquote><p><strong>Note:</strong> FreateOJ uses a custom tier, <code>tierfreateoj</code>, which contains all the runtimes in Tier 1 and some additional ones. You can find the list of supported runtimes here. The Docker image is maintained at freateoj/judge-tierfreateoj on Docker Hub.</p></blockquote>
+            <h4>From source</h4>
+            <p>The session below build a <code>judge-tierfreateoj</code>:</p>
+<pre><code class="language-shell-session">$ git clone --recursive judge-server
+$ cd judge/.docker
+$ make judge-tierfreateoj
+</code></pre>
+            <p>The session below spawns a <code>tierfreateoj</code> judge image in the same server as the site server. <strong>It expects problems to be placed on the host under <code>/mnt/problems</code>, and judge-specific configuration to be in <code>/mnt/problems/judge.yml</code>.</strong></p>
+            <blockquote><p><strong>Note:</strong> For first time developers: Both the judge and site can share a common problems folder, which is specified at <code>DMOJ_PROBLEM_DATA_ROOT</code> in <code>settings.py</code> for the site and as below for the judge.</p></blockquote>
+            <p>Your <code>judge.yml</code> file should look something like below:</p>
+<pre><code class="language-yaml">id: &lt;judge name&gt;
+key: &lt;judge authentication key&gt;
+problem_storage_globs:
+  - /problems/*
+</code></pre>
+<pre><code class="language-shell-session">$ docker run \
+    --name judge \
+    --network="host" \
+    -v /mnt/problems:/problems \
+    --cap-add=SYS_PTRACE \
+    -d \
+    --restart=always \
+    freateoj/judge-tierfreateoj:latest \
+    run -p 9999 -c /problems/judge.yml localhost -A 0.0.0.0 -a 12345
+</code></pre>
+            <p>If you changed the port that was specified in <code>BRIDGED_JUDGE_ADDRESS</code> of the site's <code>local_settings.py</code>, you need to change the <code>-p 9999</code> to match the config as well.</p>
+            <p>If you want to run multiple judges, you need to changes:</p>
+            <ul>
+                <li>Container name (<code>--name judge</code>): each judge need different name</li>
+                <li>judge.yml file (<code>/problems/judge.yml</code>): each judge need different config file</li>
+                <li><code>-a 12345</code>: change to others ports</li>
+            </ul>
+            <h3>Through PyPI</h3>
+            <blockquote><p><strong>Warning:</strong> Not available for FreateOJ</p></blockquote>
+            <p>We are not maintaining our judge on PyPI, you should use the docker setup above.</p>
+        </div>
+
+        <div class="doc-section" id="judge-config">
+            <h1>Configuring a judge</h1>
+            <p>The FreateOJ judge is configured with a YAML file, which contains the runtimes, problems folders, and other information.</p>
+            <p>A sample configuration file is available <a href="../sample_files/judge_conf.yml">here</a>.</p>
+            <h2>Runtimes</h2>
+            <p>The runtimes are configured with a <code>runtime</code> node. While most runtimes can be automatically configured with <code>dmoj-autoconf</code>, those that are not in the <code>$PATH</code> variable will not be automatically detected, and will need to be manually configured.</p>
+            <h2>Problems</h2>
+            <p>The problems are configured with <code>problem_storage_globs</code>. This is a list of (potentially recursive) globs, as defined by Python's <code>glob</code> library. Any folders that match any of the listed globs and contain an <code>init.yml</code> will be treated as a problem directory. For example:</p>
+            <ul>
+                <li><code>/mnt/problems/folder1/*</code> will match <code>/mnt/problems/folder1/problem1</code>.</li>
+                <li><code>/mnt/problems/folder2/**/</code> will match all subfolders of <code>/mnt/problems/folder2</code>, e.g. <code>/mnt/problems/folder2/foo/bar/problem2</code>.</li>
+                <li><code>/mnt/problems/folder3/year20[0-9][0-9]</code> will match <code>/mnt/problems/folder3/year2023</code>.</li>
+            </ul>
+            <h2>ID</h2>
+            <p>The judge's display name is configured with an <code>id</code> node. This is a string, and it should match the one on the site interface.</p>
+            <h2>Key</h2>
+            <p>This key is used to validate your judge's connection to the bridge, and as such, should match the one on the site interface. This is configured with a <code>key</code> node.</p>
+        </div>
+
+        <div class="doc-section" id="supported-languages">
+            <h1>Supported languages</h1>
+            <p>FreateOJ supports grading in 56 languages: Ada, Assembly (x64/x86), AWK, Brain****, C (Clang/GCC), C#, C++14 (Clang/GCC), C++03/11/17/20, C11, COBOL, D, Dart, F#, Forth, Fortran, Go, Groovy, Haskell, INTERCAL, Java 8/latest, Kotlin, Lean 4, Lisp, LLVM IR, Lua, NASM, NASM64, OCaml, Pascal, Perl, PHP, Pike, Prolog, PyPy 2/3, Python 2/3, Racket, Ruby, Rust, Scala, Scheme, Sed, Swift, TCL, Text, Turing, V8 JavaScript, Visual Basic, Zig. All these languages are tested in production on FreateOJ.</p>
+            <p>As it stands, some languages are used more than others in the scope of competitive programming, so some executors have been tested more than others. As a result, they are more likely to be bug-free. As of October 2022, the stats are:</p>
+<pre><code class="language-text">Java 8: 1047632
+Python 3: 900484
+C++11: 589256
+C++14: 510588
+C++17: 393980
+Java (latest): 172589
+C++20: 163351
+Python 2: 142767
+</code></pre>
+        </div>
+
+        <div class="doc-section" id="status-codes">
+            <h1>Status codes</h1>
+            <p>This page lists all status codes encountered on the FreateOJ and their description. It should be noted that it is possible for a test case to be given multiple status codes (indeed, this is usually the case for non-AC verdicts), in which case the one with the highest priority will be displayed. This page lists status codes in order of increasing priority.</p>
+            <h2>AC - Accepted</h2>
+            <p>Your program passed testing! In some cases, this may be accompanied with additional feedback from the grader.</p>
+            <h2>WA - Wrong Answer</h2>
+            <p>Your program did not crash while executing, but the output it produced was wrong. As for AC, this may be accompanied with additional feedback stating what you did wrong.</p>
+            <h2>IR - Invalid Return</h2>
+            <p>Your program returned with a nonzero exit code (if you're not using a native language like C++, it crashed). For languages like Python or Java, this will typically be accompanied with the name of the exception your program threw, e.g., <code>NameError</code> or <code>java.lang.NullPointerException</code>, respectively.</p>
+            <h2>RTE - Runtime Error</h2>
+            <p>Your program caused a runtime error to occur. This will only occur for native languages like C or C++. FreateOJ maps many common RTEs to more useful descriptions, described below.</p>
+            <table>
+                <thead><tr><th>Feedback</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>segmentation fault</code>, <code>bus error</code></td><td>Your program was killed by <code>SIGSEGV</code> or <code>SIGBUS</code>. Generally, this means you ran out of memory, but it can also mean that you are accessing arrays out of bounds, in some cases.</td></tr>
+                    <tr><td><code>floating point exception</code></td><td>Your program performed a bad arithmetic operation, such as division by zero.</td></tr>
+                    <tr><td><code>killed</code></td><td>Your program was killed by the runtime for some reason (we don't know).</td></tr>
+                    <tr><td><code>{} syscall disallowed</code></td><td>Unless you are doing something of a dubious nature, you should never see this message. If you do, please submit an issue on the judge-server repository so we can get it sorted out. It is raised when your program attempts to use a disallowed system call.</td></tr>
+                    <tr><td><code>std::bad_alloc</code></td><td><code>new</code> failed to allocate enough memory.</td></tr>
+                    <tr><td><code>failed initializing</code></td><td>Your program uses too much data defined in global scope for it to fit inside the memory constraints at startup. A typical example is code like <code>int arr[10000][10000]</code> on a problem with a 64mb memory limit &mdash; the aforementioned array will take 381mb, far above the allowed limit.</td></tr>
+                </tbody>
+            </table>
+            <h2>OLE - Output Limit Exceeded</h2>
+            <p>Your program outputted too much data to <code>stdout</code>, typically over 256mb (though some problems may have custom &mdash; generally larger &mdash; constraints).</p>
+            <h2>MLE - Memory Limit Exceeded</h2>
+            <p>Your program ran out of memory. Sometimes, this might manifest itself as an RTE with <code>segmentation fault</code> or <code>std::bad_alloc</code>.</p>
+            <h2>TLE - Time Limit Exceeded</h2>
+            <p>Your program took too long to execute.</p>
+            <h2>IE - Internal Error</h2>
+            <p>If you see this, it means either the judge encountered an error or the problemsetter's configuration is incorrect.</p>
+        </div>
+
+        <div class="doc-section" id="problem-format">
+            <h1>Problem format</h1>
+            <p>Each problem is stored in its own directory. That directory must contain a file named <code>init.yml</code>.</p>
+            <h2><code>init.yml</code></h2>
+            <p>The entire file is a YAML object. It must contain one key, <code>test_cases</code>. <code>test_cases</code> can either be a list of test cases, or two regexes to match input and output test cases. Optionally, but almost always, will there be an <code>archive</code> key, which allows the problem data to be stored, compressed, in a <code>.zip</code> file, instead of the problem directory as flat files.</p>
+            <h2><code>test_cases</code></h2>
+            <p>There are two methods to specify test cases.</p>
+            <p>The first method is to use a list of YAML associative arrays. Each element in the list is a YAML associative array (usually written as a keyed branch) that represents a test case. The element contains the key <code>points</code>, mapping to an integer specifying the number of points that test case is worth.</p>
+            <p>If <code>points: 0</code> is specified, getting a non-AC verdict on this case will result in the remaining test cases being skipped. This also applies to batched test cases where <code>points: 0</code> is specified.</p>
+            <p>However, note that these cases will not be automatically run at the beginning, that is if you specify</p>
+<pre><code class="language-yaml">test_cases:
+- {in: case1.1.in, out: case1.1.out, points: 100}
+- {in: case1.0.in, out: case1.0.out, points: 0}
+</code></pre>
+            <p><code>case1.1</code> will be graded before <code>case1.0</code>, and getting a non-AC verdict on <code>case1.0</code> will result in a verdict of <code>100/100 (WA)</code>.</p>
+            <p>The correct configuration would be:</p>
+<pre><code class="language-yaml">test_cases:
+- {in: case1.0.in, out: case1.0.out, points: 0}
+- {in: case1.1.in, out: case1.1.out, points: 100}
+</code></pre>
+            <h3>Normal cases</h3>
+            <p>For normal cases, the test case will contain keys <code>in</code> and <code>out</code>, mapping to the path for the input and output files, respectively. The path is in the zip file if <code>archive</code> is defined, otherwise relative to the problem directory. A normal case will contain the key <code>points</code>.</p>
+            <h3>Batched cases</h3>
+            <p>The batch will contain the keys <code>points</code> and <code>batched</code>. <code>batched</code> will map to a list of batched cases, where each case contains <code>in</code> and <code>out</code>.</p>
+            <p>Optionally, the batch can contain a key <code>dependencies</code>. If specified, it should be a list of integers, indicating the one-indexed batch numbers that the batch depends on. This batch will only run if all of the dependent batches passed. The sample <code>init.yml</code> below is set up so the last batch only runs if the first two passed.</p>
+            <p>Note that if short circuit is enabled, it overrides this setting, i.e., a failed case implies immediate judging termination. Pretests (cases or batches with <code>points: 0</code>) also still imply immediate judging termination.</p>
+            <p>Below is a sample <code>init.yml</code>:</p>
+<pre><code class="language-yaml">archive: tle16p4.zip
+test_cases:
+- {points: 0, in: tle16p4.p0.in, out: tle16p4.p0.out}
+- {points: 10, in: tle16p4.p1.in, out: tle16p4.p1.out}
+- points: 10
+  batched:
+  - {in: tle16p4.0.in, out: tle16p4.0.out}
+  - {in: tle16p4.1.in, out: tle16p4.1.out}
+- points: 10
+  batched:
+  - {in: tle16p4.2.in, out: tle16p4.2.out}
+  - {in: tle16p4.3.in, out: tle16p4.3.out}
+- points: 10
+  batched:
+  - {in: tle16p4.4.in, out: tle16p4.4.out}
+  - {in: tle16p4.5.in, out: tle16p4.5.out}
+  dependencies: [1, 2]
+</code></pre>
+            <p>As FreateOJ's YAML dialect supports dynamic keys, large <code>init.yml</code>s can be programmatically generated. See the sample files for examples.</p>
+            <h3>Specifying cases with regexes</h3>
+            <p>If the test cases follow a similar format, it is possible to specify them with a regex.</p>
+            <p>The default regex for input files is <code>^(?=.*?\.in|in).*?(?:(?:^|\W)(?P&lt;batch&gt;\d+)[^\d\s]+)?(?P&lt;case&gt;\d+)[^\d\s]*$</code>, and the default regex for output files is <code>^(?=.*?\.out|out).*?(?:(?:^|\W)(?P&lt;batch&gt;\d+)[^\d\s]+)?(?P&lt;case&gt;\d+)[^\d\s]*$</code>.</p>
+            <p>Some examples of file formats they can match are:</p>
+<pre><code class="language-text">test.1.in
+test-1.in
+test-case-1.in
+
+test-1-2.in
+test-batch-1-case-2.in
+1.2.in
+problem-1-case-1-batch-2.in
+</code></pre>
+            <p>Where the first three are standalone cases (i.e. not in a batch) and the latter four are batched.</p>
+            <p>Note that non-batched cases treat their case number as their batch number, e.g.</p>
+<pre><code class="language-text">1.in
+2.1.in
+2.2.in
+3.in
+</code></pre>
+            <p>would be sorted in this order by the judge.</p>
+            <p>These can be overwritten by specifying <code>input_format</code> and <code>output_format</code> within <code>test_cases</code>, respectively. The points awarded to each test case is given by <code>case_points</code>, and it defaults to 1 point per test case/batch. If there are many cases, a global <code>points:</code> can be used to set the points for all cases.</p>
+        </div>
+
+        <div class="doc-section" id="problem-examples">
+            <h1>Problem examples</h1>
+            <table>
+                <thead><tr><th>Grading</th><th>Implemented Problem</th></tr></thead>
+                <tbody>
+                    <tr><td><a href="../../problem_examples/standard/aplusb">Standard Grading (IO-based)</a></td><td><a href="https://oj.freate.io.vn/problem/aplusb">https://oj.freate.io.vn/problem/aplusb</a></td></tr>
+                    <tr><td><a href="../../problem_examples/batched/hungry">Batched Standard Grading (IO-based)</a></td><td><a href="https://oj.freate.io.vn/problem/hungry">https://oj.freate.io.vn/problem/hungry</a></td></tr>
+                    <tr><td><a href="../../problem_examples/grader/shortest1">Custom Grading</a></td><td><a href="https://oj.freate.io.vn/problem/shortest1">https://oj.freate.io.vn/problem/shortest1</a></td></tr>
+                    <tr><td><a href="../../problem_examples/interactive/seed2">Interactive Grading (conditional IO-based)</a></td><td><a href="https://oj.freate.io.vn/problem/seed2">https://oj.freate.io.vn/problem/seed2</a></td></tr>
+                    <tr><td><a href="../../problem_examples/interactive/seed2native">Native Interactive Grading (conditional IO-based)</a></td><td><a href="https://oj.freate.io.vn/problem/seed2">https://oj.freate.io.vn/problem/seed2</a></td></tr>
+                    <tr><td><a href="../../problem_examples/signature/siggrade">Signature Grading (IOI-style)</a></td><td><a href="https://oj.freate.io.vn/problem/siggrade">https://oj.freate.io.vn/problem/siggrade</a></td></tr>
+                    <tr><td><a href="../../problem_examples/generator/ds3">Generating IO Data on the Fly (large test case generation)</a></td><td><a href="https://oj.freate.io.vn/problem/ds3">https://oj.freate.io.vn/problem/ds3</a></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="doc-section" id="custom-checkers">
+            <h1>Custom checkers</h1>
+            <p>A problem with many possible outputs (e.g. not a single possible answer, with score based on accuracy) may benefit from the <code>checker</code> field in the <code>init.yml</code> file. A checker is a Python script that is executed per-case post-execution &mdash; it grades the output of a process but does not interact with it.</p>
+            <p>The FreateOJ judge already defines several checkers. These checkers are specified as follows:</p>
+<pre><code class="language-yaml">checker:
+  name: &lt;name of checker&gt;
+  args: {}
+</code></pre>
+            <p>Where <code>args</code> is a dictionary of arguments to pass to the checker's <code>check</code> function. If you do not need to pass arguments, then you can write:</p>
+<pre><code class="language-yaml">checker: &lt;name of checker&gt;
+</code></pre>
+            <h2>Standard checker - <code>standard</code></h2>
+            <p>If no <code>checker</code> field is specified, then the problem will default to the <code>standard</code> checker.</p>
+            <p>This checker returns <code>True</code> if the submission's output and the judge's output are equal, modulo whitespace. Specifically, the submission's output and the judge's output are split line-by-line and tokenized, with lines with no tokens being discarded. For each individual line, the submission's tokens must match exactly with the judge's tokens.</p>
+            <h2>Easy checker - <code>easy</code></h2>
+            <p>This checker ignores all whitespace and letter case, then checks if the number of occurrences of each character are equal.</p>
+            <h2>Floating point checkers - <code>floats</code></h2>
+            <p>The <code>floats</code> checker is used when outputs may suffer from floating point errors.</p>
+            <p><code>args</code> can contain a key for <code>precision</code>, indicating an epsilon of 10<sup>-precision</sup>. This value defaults to 6.</p>
+            <p>Additionally, <code>args</code> can contain a key for <code>error_mode</code>. The supported values are:</p>
+            <ul>
+                <li><code>default</code>: check if the submission's output is within an absolute or relative error of epsilon.</li>
+                <li><code>relative</code>: only check for relative error.</li>
+                <li><code>absolute</code>: only check for absolute error.</li>
+            </ul>
+            <p>Finally, all non-numeric outputs will be treated as strings, and will be compared for equality.</p>
+            <h3>Absolute floating point error checker - <code>floatsabs</code></h3>
+            <p><code>floatsabs</code> is an alias for <code>floats</code> with <code>error_mode</code> set to <code>absolute</code>.</p>
+            <h3>Relative floating point error checker - <code>floatsrel</code></h3>
+            <p><code>floatsrel</code> is an alias for <code>floats</code> with <code>error_mode</code> set to <code>relative</code>.</p>
+            <h2>Identical checker - <code>identical</code></h2>
+            <p>The <code>identical</code> checker will check if the submission's output and the judge's output are identical, including whitespace.</p>
+            <p><code>args</code> can contain a key for <code>pe_allowed</code>, which defaults to <code>True</code>. If <code>pe_allowed</code> is true, the checker will give the feedback <code>Presentation Error, check your whitespace</code>, if the output is correct modulo whitespace. Otherwise, the checker will return <code>True</code> if the two outputs are identical, and <code>CheckerResult(False, 0, feedback=None)</code> otherwise.</p>
+            <h2>Line-by-line checker - <code>linecount</code></h2>
+            <p>The <code>linecount</code> checker is a custom checker primarily used for ECOO problems.</p>
+            <p><code>args</code> can contain a key for <code>feedback</code>, which defaults to <code>True</code>. <code>feedback</code> indicates if the judge should give per-line feedback: a checkmark for a correct line, and an X for an incorrect line.</p>
+            <h2>Sorted checker - <code>sorted</code></h2>
+            <p>The <code>sorted</code> checker checks if the submission's output and judge's output are equal, modulo their ordering.</p>
+            <p><code>args</code> can contain a key for <code>split_on</code>, which defaults to <code>lines</code>. The supported values for <code>split_on</code> are:</p>
+            <ul>
+                <li><code>lines</code>: the checker will return <code>True</code> if the two outputs are identical, modulo the ordering of their lines. Empty lines are ignored.</li>
+                <li><code>whitespace</code>: the checker will return <code>True</code> if the two outputs are identical, modulo the ordering of their tokens.</li>
+            </ul>
+            <h3>Unordered checker - <code>unordered</code></h3>
+            <p>This is an alias for <code>sorted</code> with <code>split_on</code> equal to <code>whitespace</code>.</p>
+            <h2>Custom checkers</h2>
+            <p>A <code>checker</code> Python script must implement a function that is called by the judge:</p>
+<pre><code class="language-python">def check(process_output, judge_output, **kwargs):
+</code></pre>
+            <p>Variables in global scope will exist throughout the grading process.</p>
+            <p><code>**kwargs</code> is a dictionary containing:</p>
+            <ul>
+                <li><code>submission_source</code>: the source code of the submission.</li>
+                <li><code>judge_input</code>: the judge's input.</li>
+                <li><code>point_value</code>: the point value of the test case.</li>
+                <li><code>case_position</code>: the index of the test case.</li>
+                <li><code>batch</code>: the batch the test case belongs to, or <code>0</code> if the test case is not in a batch.</li>
+                <li><code>submission_language</code>: the language the submission was submitted in.</li>
+                <li><code>binary_data</code>: a boolean, which is <code>True</code> if the data was not normalized to Linux line endings, and <code>False</code> otherwise.</li>
+                <li><code>execution_time</code>: the runtime of the program, in seconds.</li>
+                <li><code>problem_id</code>: the problem code.</li>
+                <li><code>result</code>: the submission's preliminary <code>Result</code>.</li>
+            </ul>
+            <p>Additionally, if the <code>check</code> method has the flag <code>run_on_error</code> set (i.e. <code>check.run_on_error = True</code>), it will be run on the submission's output, even if the submission received a preliminary IR/TLE/RTE/MLE verdict. ~~The only built-in checker that has this flag set is the <code>linecount</code> checker.~~ (Removed in this commit)</p>
+            <h3>Returns</h3>
+            <p><code>check</code> can return either a <code>CheckerResult</code> object (<code>from freateoj.result import CheckerResult</code>), or a boolean (<code>case_passed_bool</code>). A <code>CheckerResult</code> can be instantiated through <code>CheckerResult(case_passed_bool, points_awarded, feedback='')</code>.</p>
+            <h2>Native checkers</h2>
+            <p>Sometimes, problems may require a computationally expensive checker. In such cases, it is often beneficial to move the checker from the slow Python problem module and into a native language. This is handled by the <code>bridged</code> checker.</p>
+            <p>The <code>bridged</code> checker takes the following arguments:</p>
+            <ul>
+                <li><code>files</code>: either a filename, or a list of filenames, corresponding to the checker.</li>
+                <li><code>lang</code>: the language the checker is written in, using the same conventions as the judge.</li>
+                <li><code>time_limit</code>: the time limit allocated to the checker. It defaults to <code>env['generator_time_limit']</code>.</li>
+                <li><code>memory_limit</code>: the memory limit allocated to the checker. It defaults to <code>env['generator_memory_limit']</code>.</li>
+                <li><code>compiler_time_limit</code>: the time limit allocated to compiling the checker. It defaults to <code>env['generator_compiler_limit']</code>.</li>
+                <li><code>feedback</code>: if true, the checker's standard output will be shown as feedback. Defaults to true.</li>
+                <li><code>flags</code>: compilation flags to pass to the checker.</li>
+                <li><code>type</code>: specifies the arguments to pass to the checker and how to interpret the checker's return code and output.
+                    <ul>
+                        <li>The <code>default</code> type passes the arguments in the order <code>input_file output_file judge_file</code>. A return code of <code>0</code> is an AC, <code>1</code> is a WA, and anything else results in an internal error.</li>
+                        <li>The <code>testlib</code> type passes the arguments in the order <code>input_file output_file judge_file</code>. A return code of <code>0</code> is an AC, <code>1</code> is a WA, <code>2</code> is a presentation error, <code>3</code> corresponds to an assertion failing, and <code>7</code>, along with an output to <code>stderr</code> of the format <code>points X</code> for an integer X awards X points. Anything else results in an internal error.</li>
+                        <li>The <code>coci</code> type behaves similarly to the <code>testlib</code> type, but has partial format <code>partial X/Y</code>, which awards X/Y of the points.</li>
+                        <li>The <code>peg</code> type exists for compatibility with the WCIPEG judge.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>The files will be compiled and sandboxed, then executed with the arguments <code>input_file</code>, <code>output_file</code>, and <code>judge_file</code>, which are files containing input, submission output, and judge output, respectively.</p>
+        </div>
+
+        <div class="doc-section" id="custom-graders">
+            <h1>Custom graders</h1>
+            <h2>Custom grader behaviour</h2>
+            <p>An <code>init.yml</code> object can contain a top-level <code>custom_judge</code> node, which contains a path to a Python file to be executed as a grader for the problem. The grader has access to the archive specified in <code>archive</code>.</p>
+            <p>In most use cases, either using one of the built-in graders, or a custom checker will suffice. A custom grader is only truly necessary if the normal interaction between the judge and the submission is insufficient.</p>
+<pre><code class="language-python">class Grader(BaseGrader):
+  def grade(self, case):
+    pass
+</code></pre>
+            <h3>Parameters</h3>
+            <p><code>case</code> is a <code>TestCase</code> object.</p>
+            <ul>
+                <li><code>case.position</code> is an integer, the current test case with a zero-based index.</li>
+                <li><code>case.input_data()</code> is a buffer containing the contents of the <code>in</code> file specified for the current case in <code>init.yml</code>. May be <code>b''</code>, if no case input file was specified.</li>
+                <li><code>case.output_data()</code> is a buffer containing the contents of the <code>out</code> file specified for the current case in <code>init.yml</code>. May be <code>b''</code>, if no case output file was specified.</li>
+                <li><code>case.points</code> is an integer, the max points that can be awarded for the current test case.</li>
+            </ul>
+            <h3>Returns</h3>
+            <p>A <code>Result</code> object (<code>from freateoj.result import Result</code>). Some notable fields include:</p>
+            <ul>
+                <li><code>result_flag</code>: stores a mask defining the current test case result code.</li>
+                <li><code>proc_output</code>: contains the string that will be displayed in the partial output pane. However, if <code>result_flag</code> is <code>Result.AC</code>, then the partial output pane will not be shown.</li>
+                <li><code>feedback</code>: contains the feedback given by the judge.</li>
+                <li><code>extended_feedback</code>: contains any extended feedback that would not fit into the shorter <code>feedback</code> field, and is displayed as a separate pane beside the partial output on the site.</li>
+            </ul>
+            <h3>Example</h3>
+            <p>To illustrate, in a problem where the process must echo a line of input, an interactive approach would look like this:</p>
+<pre><code class="language-python">import subprocess
+
+from freateoj.graders.standard import StandardGrader
+from freateoj.result import Result
+
+
+class Grader(StandardGrader):
+  def grade(self, case):
+    result = Result(case)
+    case_input = b'Hello, World!\n'
+
+    self._current_proc = self.binary.launch(
+      time=self.problem.time_limit,
+      memory=self.problem.memory_limit,
+      stdin=subprocess.PIPE,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      wall_time=case.config.wall_time_factor * self.problem.time_limit,
+    )
+    output, error = self._current_proc.communicate(case_input)
+    self.binary.populate_result(error, result, self._current_proc)
+
+    if output == case_input:
+      result.extended_feedback = 'Correct answer! This will be displayed in the output pane.'
+      if result.result_flag == Result.AC:
+        result.points = case.points
+    else:
+      result.result_flag |= Result.WA
+      result.feedback = 'Wrong answer! :('
+
+    return result
+</code></pre>
+            <p>A simple solution to this problem is <code>print(input())</code>.</p>
+            <p>The associated <code>init.yml</code> for this problem would look like this:</p>
+<pre><code class="language-yaml">custom_judge: interactor.py
+unbuffered: true
+test_cases:
+- points: 100
+</code></pre>
+            <p>Since we use no input or output files (our test case is hardcoded), we do not need to specify the <code>archive</code> or related <code>in</code> and <code>out</code> fields.</p>
+            <p>In this example, it's important to note the <code>unbuffered</code> node. If set to <code>true</code>, the judge will use a pseudoterminal device for a submission's input and output pipes. Since ptys are not buffered by design, setting <code>unbuffered</code> to <code>true</code> removes the need for user submissions to <code>flush()</code> their output stream to guarantee that the <code>grader</code> receives their response. <strong>The <code>unbuffered</code> node is not exclusive to interactive grading: it may be specified regardless of judging mode.</strong></p>
+            <h2>Interactive grading</h2>
+            <p>Interactive grading is used for problems where users should implement an online algorithm or where the grader must generate input or compute a score based on the user's previous output. Using an interactive grader is similar to using a custom grader: the <code>custom_judge</code> node also needs to be set. Rewriting the previous custom judge using an interactive grader would result in:</p>
+<pre><code class="language-python">from freateoj.graders.interactive import InteractiveGrader
+from freateoj.utils.unicode import utf8text
+
+
+class Grader(InteractiveGrader):
+  def interact(self, case, interactor):
+    # The line to print
+    case_input = 'Hello, World!'
+
+    # Print the line, using the interactor
+    interactor.writeln(case_input)
+
+    # interact can return either a boolean, or a Result
+    return case_input == utf8text(interactor.readln())
+</code></pre>
+            <h3>Parameters</h3>
+            <p><code>case</code> is a <code>TestCase</code> object, and is identical to the one in the <code>Grader</code> section. <code>interactor</code> is an <code>Interactor</code> object.</p>
+            <ul>
+                <li><code>interactor.read()</code> reads all of the submission's output available.</li>
+                <li><code>interactor.readln(strip_newline=True)</code> reads the next line of the submission's output. If <code>strip_newline</code> is true, the trailing newline is stripped, otherwise it is retained.</li>
+                <li><code>interactor.readtoken(delim=None)</code> reads the next available token of the submission's output, as determined by <code>string.split(delim)</code>.</li>
+                <li><code>interactor.readint(lo=float('-inf'), hi=float('inf'), delim=None)</code> reads the next token of the submission's output, as determined by <code>string.split(delim)</code>. Additionally, the checker will automatically generate a wrong answer verdict if either the token cannot be converted to an integer, or if it is not in the range [lo, hi].</li>
+                <li><code>interactor.readfloat(lo=float('-inf'), hi=float('inf'), delim=None)</code> reads the next token of the submission's output, as determined by <code>string.split(delim)</code>. Additionally, the checker will automatically generate a wrong answer verdict if either the token cannot be converted to a float, or if it is not in the range [lo, hi].</li>
+                <li><code>interactor.write(val)</code> writes <code>val</code>, cast to a string, to the submission's standard input.</li>
+                <li><code>interactor.writeln(val)</code> writes <code>val</code>, cast to a string, to the submission's standard input, followed by a newline.</li>
+                <li><code>interactor.close()</code> closes the submission's <code>stdin</code> stream.</li>
+            </ul>
+            <h3>Returns</h3>
+            <p>Either a boolean or a <code>Result</code> (<code>from freateoj.result import Result</code>) object. The boolean is <code>True</code> if the submission should score full points, and <code>False</code> otherwise. The <code>Result</code> object is handled the same way as custom graders.</p>
+            <h2>Native interactive grading</h2>
+            <p>Sometimes, an interactive grader will be very computationally expensive. In these cases, one can use the <code>bridged</code> grader. To invoke the <code>bridged</code> grader, <code>interactive</code> should be a top-level node that contains <code>files</code>. <code>files</code> is either a single filename, or a list of filenames, corresponding to the interactor.</p>
+            <p>Optional arguments are:</p>
+            <ul>
+                <li><code>lang</code>: the language of the interactor. If empty, the judge will attempt to detect the language from the filename extension(s). Currently, the judge can detect <code>.cpp</code>, <code>.cc</code>, and <code>.c</code>.</li>
+                <li><code>flags</code>: flags to pass to the compiler.</li>
+                <li><code>compiler_time_limit</code>: the time limit allocated to compiling the interactor. It defaults to <code>env['compiler_time_limit']</code>.</li>
+                <li><code>preprocessing_time</code>: the interactor's time limit is equal to this value plus the time limit of the problem, in seconds. It defaults to 2.</li>
+                <li><code>memory_limit</code>: the memory limit allocated to the interactor. It defaults to <code>env['generator_memory_limit']</code>.</li>
+                <li><code>type</code>: specifies the arguments to pass to the checker and how to interpret the checker's return code and output.
+                    <ul>
+                        <li>The <code>default</code> type passes the arguments in the order <code>input_file judge_file</code>. A return code of <code>0</code> is an AC, <code>1</code> is a WA, and anything else results in an internal error.</li>
+                        <li>The <code>testlib</code> type passes the arguments in the order <code>input_file output_file judge_file</code>. Note that <code>output_file</code> will always be <code>/dev/null</code>, and is passed to maintain compatibility with <code>testlib.h</code>. A return code of <code>0</code> is an AC, <code>1</code> is a WA, <code>2</code> is a presentation error, <code>3</code> corresponds to an assertion failing, and <code>7</code>, along with an output to <code>stderr</code> of the format <code>points X</code> for an integer X awards X points. Anything else results in an internal error.</li>
+                        <li>The <code>coci</code> type passes the arguments in the order <code>input_file judge_file</code>. Its parsing of return codes is the same as the <code>testlib</code> type, but has partial format <code>partial X/Y</code>, which awards X/Y of the points.</li>
+                        <li>The <code>peg</code> type exists for compatibility with the WCIPEG judge, and is not meant to be used here.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>The interactor's standard input is connected to the submission's standard output, and vice versa. After the interactor prints, it is required to flush.</p>
+            <p>To specify a correct answer, the interactor should return 0. To specify an incorrect answer, the interactor should return 1. All other return values will be considered internal errors. To override this behaviour, you can change <code>type</code> to a valid <code>contrib</code> module, such as <code>testlib</code>.</p>
+            <h3>Example</h3>
+            <p>An example <code>init.yml</code> would be as follows:</p>
+<pre><code class="language-yaml">unbuffered: true
+archive: seed2.zip
+interactive: {files: interactor.cpp, type: testlib}
+test_cases:
+- {in: seed2.1.in, points: 20}
+- {in: seed2.2.in, points: 20}
+- {in: seed2.3.in, points: 20}
+- {in: seed2.4.in, points: 20}
+- {in: seed2.5.in, points: 20}
+</code></pre>
+            <p>An example of interactor is as follows. Note that it is not necessary to flush, even if <code>unbuffered</code> is false.</p>
+<pre><code class="language-cpp">#include &lt;cstdio&gt;
+#include &lt;cstdlib&gt;
+
+inline void read(long long *i) {
+  if (scanf("%lld", i) != 1 || *i &lt; 1 || *i &gt; 2000000000)
+    exit(2);
+}
+
+int main(int argc, char *argv[]) {
+  FILE *input_file = fopen(argv[1], "r");
+  int N, guesses = 0;
+  long long guess;
+  fscanf(input_file, "%d", &amp;N);
+  while (guess != N) {
+    read(&amp;guess);
+    if (guess == N) {
+      puts("OK");
+    } else if (guess &gt; N) {
+      puts("FLOATS");
+    } else {
+      puts("SINKS");
+    }
+    guesses++;
+  }
+  if (guesses &lt;= 31)
+    return 0; // AC
+  else
+    return 1; // WA
+}
+</code></pre>
+            <h2>Function signature grading (IOI-style)</h2>
+            <p>Signature grading is used for problems where users should implement an online algorithm or interact with the grader directly without the need for traditional input and output routines. This is commonly seen in competitions such as the IOI, where all input is passed through function arguments and output is replaced with return values or directly modifying specifically allocated memory for the computed answer.</p>
+            <p>The following languages are supported for this mode:</p>
+            <ul>
+                <li>The C family: C, C11, Clang</li>
+                <li>The C++ family: C++03, C++11, C++14, C++17, C++20, Clang++</li>
+            </ul>
+            <p><code>signature_grader</code> should be a top-level node that contains <code>entry</code> and <code>header</code>. <code>entry</code> is a C or C++ file that contains the <code>main</code> function. It should read input from <code>stdin</code>, call the user's implemented functions specified in <code>header</code>, and write output to <code>stdout</code>. You may specify a custom <code>checker</code> to interpret the <code>entry</code>'s output. If no custom checker is specified, it will be compared to the output file using the default checker.</p>
+            <p>The user's submission will be automatically modified to include the file <code>header</code>, and the symbol <code>main</code> is redefined as <code>main_GUID</code> where GUID is a randomly generated GUID. This is so users testing their program do not have to manually remove their <code>main</code> function before submissions; it does not protect against the preprocessor directive <code>#undef main</code>.</p>
+            <p>The global variables in the <code>entry</code> should be declared static to prevent name collisions. Optimally, <code>header</code> should have an include guard, in case it contains something other than function prototypes.</p>
+            <h3>Example</h3>
+            <p>An example of the <code>init.yml</code>:</p>
+<pre><code class="language-yaml">signature_grader: {entry: handler.c, header: header.h}
+test_cases:
+- {in: siggrade.1.in, out: siggrade.1.out, points: 50}
+- {in: siggrade.2.in, out: siggrade.2.out, points: 50}
+</code></pre>
+            <p>An example of the <code>entry</code> file:</p>
+<pre><code class="language-c">#include "header.h"
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+
+static int n;
+
+int main() {
+  scanf("%d", &amp;n);
+  bool valid = is_valid(n); // Defined in header
+  printf(valid ? "correct" : "wrong");
+  return 0;
+}
+</code></pre>
+            <p>An example of the <code>header</code> file:</p>
+<pre><code class="language-c">#ifndef _GRADER_HEADER_INCLUDED
+#define _GRADER_HEADER_INCLUDED
+#include &lt;stdbool.h&gt;
+bool is_valid(int);
+#endif
+</code></pre>
+        </div>
+
+        <div class="doc-section" id="generators">
+            <h1>Generators</h1>
+            <p>When there is a large amount of test data, a generator file can be used instead of input and output files. A generator is a program that takes command line arguments for each case, and outputs the input and output data for each case.</p>
+            <h2>The <code>generator</code> node</h2>
+            <p>The <code>generator</code> node can contain either:</p>
+            <ul>
+                <li>a single value, the name of the generator file.</li>
+                <li>an array, in which case the first element is the source file (in either C or C++), and the remaining elements are auxiliary files, such as header files.</li>
+                <li>a YAML associative array that can contain the following keys:
+                    <ul>
+                        <li><code>source</code>: either a single string: the name of generator file, or an array, in which case the first file is the generator source, and the remaining files are auxiliary files (e.g. header files).</li>
+                        <li><code>language</code>: the language the generator is written in. If empty, the judge tries to infer the language from <code>source</code>.</li>
+                        <li><code>flags</code>: additional flags to pass to the compiler. It defaults to <code>[]</code>.</li>
+                        <li><code>compiler_time_limit</code>: the compiler time limit for the generator. It defaults to <code>env.compiler_time_limit</code>, as defined in <code>freateoj/judgeenv.py</code>. It is recommended to set this value to 60 seconds if using <code>testlib.h</code>.</li>
+                        <li><code>time_limit</code>: the time limit allocated to the generator. It defaults to <code>env.time_limit</code>, as defined in <code>freateoj/judgeenv.py</code>.</li>
+                        <li><code>memory_limit</code>: the memory limit allocated to the generator. It defaults to <code>env.memory_limit</code>, as defined in <code>freateoj/judgeenv.py</code>.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Additionally, it is possible to specify this node in each test case, so several generators can be used for a single problem.</p>
+            <h2>Generator arguments</h2>
+            <p>The <code>generator_args</code> node contains a list of arguments that will be cast to a Python <code>str</code>, then passed to the compiled generator. <code>generator_args</code> can be specified as a top-level node, or more commonly, as a key in a test case node. For example, consider:</p>
+<pre><code class="language-yaml">generator: gen.cpp
+test_cases:
+- {generator_args: [false, 123, "a b\nc"], points: 10}
+- {points: 20}
+</code></pre>
+            <p>For the first test case, the generator will receive 4 arguments: <code>"_aux_file"</code>, <code>"False"</code>, <code>"123"</code>, <code>"a b\nc"</code>. For the second test case, <code>generator_args</code> defaults to <code>[]</code>, so the generator will receive 1 argument: <code>"_aux_file"</code>.</p>
+            <p>The generator should output the test case's input data to <code>stdout</code>, and the output data to <code>stderr</code>.</p>
+            <p>If a test case already has an input file <strong>and</strong> output file defined by the <code>in</code> and <code>out</code> keys, the generator will not be run for that test case.</p>
+        </div>
+
+        <div class="doc-section" id="math-syntax">
+            <h1>Math Syntax Guide</h1>
+            <p>FreateOJ uses <strong>MathJax 3.2.0</strong> for rendering mathematical expressions. This guide covers the syntax conventions used across the platform.</p>
+            <h2>Quick Reference</h2>
+            <table>
+                <thead><tr><th>Type</th><th>Syntax</th><th>Example</th><th>Renders</th></tr></thead>
+                <tbody>
+                    <tr><td>Inline</td><td><code>$expr$</code></td><td><code>$x^2$</code></td><td>x&#xB2;</td></tr>
+                    <tr><td>Display</td><td><code>$$expr$$</code></td><td><code>$$\sum_{i=1}^{n} i$$</code></td><td>&sum;<sub>i=1</sub><sup>n</sup> i</td></tr>
+                </tbody>
+            </table>
+            <h2>Inline Math</h2>
+            <p>Use single dollar signs <code>$</code> to wrap inline mathematical expressions:</p>
+<pre><code class="language-markdown">The value of $\pi$ is approximately 3.14159.
+</code></pre>
+            <p>Renders as: The value of pi is approximately 3.14159.</p>
+            <h3>Common Examples</h3>
+            <table>
+                <thead><tr><th>Expression</th><th>Syntax</th></tr></thead>
+                <tbody>
+                    <tr><td>Superscript</td><td><code>$x^2$</code></td></tr>
+                    <tr><td>Subscript</td><td><code>$a_i$</code></td></tr>
+                    <tr><td>Fraction</td><td><code>$\frac{a}{b}$</code></td></tr>
+                    <tr><td>Square root</td><td><code>$\sqrt{n}$</code></td></tr>
+                    <tr><td>Summation</td><td><code>$\sum_{i=1}^{n} a_i$</code></td></tr>
+                    <tr><td>Integral</td><td><code>$\int_0^1 f(x) \, dx$</code></td></tr>
+                    <tr><td>Limit</td><td><code>$\lim_{n \to \infty} a_n$</code></td></tr>
+                    <tr><td>Binomial</td><td><code>$\binom{n}{k}$</code></td></tr>
+                </tbody>
+            </table>
+            <h2>Display Math</h2>
+            <p>Use double dollar signs <code>$$</code> for centered, display-style equations:</p>
+<pre><code class="language-markdown">$$\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$$
+</code></pre>
+            <h3>Piecewise Functions</h3>
+<pre><code class="language-markdown">$$f(x) = \begin{cases} 1 &amp; \text{if } x \ge 0 \\ -1 &amp; \text{if } x &lt; 0 \end{cases}$$
+</code></pre>
+            <h2>Common LaTeX Commands</h2>
+            <h3>Greek Letters</h3>
+            <table>
+                <thead><tr><th>Letter</th><th>Syntax</th><th>Letter</th><th>Syntax</th></tr></thead>
+                <tbody>
+                    <tr><td>&alpha;</td><td><code>$\alpha$</code></td><td>&Alpha;</td><td><code>$\Alpha$</code></td></tr>
+                    <tr><td>&beta;</td><td><code>$\beta$</code></td><td>&Beta;</td><td><code>$\Beta$</code></td></tr>
+                    <tr><td>&gamma;</td><td><code>$\gamma$</code></td><td>&Gamma;</td><td><code>$\Gamma$</code></td></tr>
+                    <tr><td>&delta;</td><td><code>$\delta$</code></td><td>&Delta;</td><td><code>$\Delta$</code></td></tr>
+                    <tr><td>&epsilon;</td><td><code>$\epsilon$</code></td><td>&Epsilon;</td><td><code>$\Epsilon$</code></td></tr>
+                    <tr><td>&theta;</td><td><code>$\theta$</code></td><td>&Theta;</td><td><code>$\Theta$</code></td></tr>
+                    <tr><td>&lambda;</td><td><code>$\lambda$</code></td><td>&Lambda;</td><td><code>$\Lambda$</code></td></tr>
+                    <tr><td>&mu;</td><td><code>$\mu$</code></td><td>&Mu;</td><td><code>$\Mu$</code></td></tr>
+                    <tr><td>&pi;</td><td><code>$\pi$</code></td><td>&Pi;</td><td><code>$\Pi$</code></td></tr>
+                    <tr><td>&sigma;</td><td><code>$\sigma$</code></td><td>&Sigma;</td><td><code>$\Sigma$</code></td></tr>
+                    <tr><td>&phi;</td><td><code>$\phi$</code></td><td>&Phi;</td><td><code>$\Phi$</code></td></tr>
+                    <tr><td>&omega;</td><td><code>$\omega$</code></td><td>&Omega;</td><td><code>$\Omega$</code></td></tr>
+                </tbody>
+            </table>
+            <h3>Operators</h3>
+            <table>
+                <thead><tr><th>Operation</th><th>Syntax</th></tr></thead>
+                <tbody>
+                    <tr><td>Modulo</td><td><code>$a \bmod b$</code></td></tr>
+                    <tr><td>Logarithm</td><td><code>$\log n$</code></td></tr>
+                    <tr><td>Natural log</td><td><code>$\ln n$</code></td></tr>
+                    <tr><td>Greatest common divisor</td><td><code>$\gcd(a, b)$</code></td></tr>
+                    <tr><td>Maximum</td><td><code>$\max(a, b)$</code></td></tr>
+                    <tr><td>Minimum</td><td><code>$\min(a, b)$</code></td></tr>
+                    <tr><td>Absolute value</td><td><code>$\|x\|$</code></td></tr>
+                    <tr><td>Floor</td><td><code>$\lfloor x \rfloor$</code></td></tr>
+                    <tr><td>Ceiling</td><td><code>$\lceil x \rceil$</code></td></tr>
+                </tbody>
+            </table>
+            <h3>Sets and Logic</h3>
+            <table>
+                <thead><tr><th>Symbol</th><th>Syntax</th></tr></thead>
+                <tbody>
+                    <tr><td>Set</td><td><code>$\{1, 2, 3\}$</code></td></tr>
+                    <tr><td>Union</td><td><code>$A \cup B$</code></td></tr>
+                    <tr><td>Intersection</td><td><code>$A \cap B$</code></td></tr>
+                    <tr><td>Subset</td><td><code>$A \subseteq B$</code></td></tr>
+                    <tr><td>Element of</td><td><code>$x \in A$</code></td></tr>
+                    <tr><td>For all</td><td><code>$\forall$</code></td></tr>
+                    <tr><td>Exists</td><td><code>$\exists$</code></td></tr>
+                    <tr><td>Therefore</td><td><code>$\therefore$</code></td></tr>
+                    <tr><td>Because</td><td><code>$\because$</code></td></tr>
+                </tbody>
+            </table>
+            <h3>Big Operators</h3>
+            <table>
+                <thead><tr><th>Symbol</th><th>Syntax</th></tr></thead>
+                <tbody>
+                    <tr><td>Sum</td><td><code>$\sum_{i=1}^{n} a_i$</code></td></tr>
+                    <tr><td>Product</td><td><code>$\prod_{i=1}^{n} a_i$</code></td></tr>
+                    <tr><td>Union</td><td><code>$\bigcup_{i=1}^{n} A_i$</code></td></tr>
+                    <tr><td>Intersection</td><td><code>$\bigcap_{i=1}^{n} A_i$</code></td></tr>
+                </tbody>
+            </table>
+            <h2>Complexity Notation</h2>
+<pre><code class="language-markdown">The time complexity is $\mathcal{O}(N \log N)$.
+</code></pre>
+            <p>Renders as: The time complexity is O(N log N).</p>
+            <h2>Colored Math</h2>
+            <p>FreateOJ supports the <code>\color</code> command:</p>
+<pre><code class="language-markdown">$\color{red}x + \color{blue}y$
+</code></pre>
+            <h2>Tips</h2>
+            <ol>
+                <li><strong>Escape dollar signs</strong>: Use <code>\$</code> for a literal dollar sign outside math mode</li>
+                <li><strong>Spacing</strong>: Use <code>\,</code>, <code>\;</code>, <code>\:</code> for different spacing widths</li>
+                <li><strong>Newlines in display math</strong>: Use <code>\\</code> for line breaks</li>
+                <li><strong>Text in math</strong>: Use <code>\text{...}</code> for text within expressions</li>
+                <li><strong>Operators</strong>: Use <code>\operatorname{...}</code> for custom operators</li>
+            </ol>
+        </div>
+
+        <div class="doc-section" id="license">
+            <h1>GNU AFFERO GENERAL PUBLIC LICENSE</h1>
+            <p><em>Version 3, 19 November 2007</em></p>
+            <p><em>Copyright &copy; 2007 Free Software Foundation, Inc. <a href="https://fsf.org/">https://fsf.org/</a></em></p>
+            <p>Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.</p>
+            <h2>Preamble</h2>
+            <p>The GNU Affero General Public License is a free, copyleft license for software and other kinds of works, specifically designed to ensure cooperation with the community in the case of network server software.</p>
+            <p>The licenses for most software and other practical works are designed to take away your freedom to share and change the works. By contrast, our General Public Licenses are intended to guarantee your freedom to share and change all versions of a program--to make sure it remains free software for all its users.</p>
+            <p>When we speak of free software, we are referring to freedom, not price. Our General Public Licenses are designed to make sure that you have the freedom to distribute copies of free software (and charge for them if you wish), that you receive source code or can get it if you want it, that you can change the software or use pieces of it in new free programs, and that you know you can do these things.</p>
+            <p>Developers that use our General Public Licenses protect your rights with two steps: (1) assert copyright on the software, and (2) offer you this License which gives you legal permission to copy, distribute and/or modify the software.</p>
+            <p>A secondary benefit of defending all users' freedom is that improvements made in alternate versions of the program, if they receive widespread use, become available for other developers to incorporate. Many developers of free software are heartened and encouraged by the resulting cooperation. However, in the case of software used on network servers, this result may fail to come about. The GNU General Public License permits making a modified version and letting the public access it on a server without ever releasing its source code to the public.</p>
+            <p>The GNU Affero General Public License is designed specifically to ensure that, in such cases, the modified source code becomes available to the community. It requires the operator of a network server to provide the source code of the modified version running there to the users of that server. Therefore, public use of a modified version, on a publicly accessible server, gives the public access to the source code of the modified version.</p>
+            <p>An older license, called the Affero General Public License and published by Affero, was designed to accomplish similar goals. This is a different license, not a version of the Affero GPL, but Affero has released a new version of the Affero GPL which permits relicensing under this license.</p>
+            <p>The precise terms and conditions for copying, distribution and modification follow.</p>
+            <h2>TERMS AND CONDITIONS</h2>
+            <h3>0. Definitions.</h3>
+            <p>"This License" refers to version 3 of the GNU Affero General Public License.</p>
+            <p>"Copyright" also means copyright-like laws that apply to other kinds of works, such as semiconductor masks.</p>
+            <p>"The Program" refers to any copyrightable work licensed under this License. Each licensee is addressed as "you". "Licensees" and "recipients" may be individuals or organizations.</p>
+            <p>To "modify" a work means to copy from or adapt all or part of the work in a fashion requiring copyright permission, other than the making of an exact copy. The resulting work is called a "modified version" of the earlier work or a work "based on" the earlier work.</p>
+            <p>A "covered work" means either the unmodified Program or a work based on the Program.</p>
+            <p>To "propagate" a work means to do anything with it that, without permission, would make you directly or secondarily liable for infringement under applicable copyright law, except executing it on a computer or modifying a private copy. Propagation includes copying, distribution (with or without modification), making available to the public, and in some countries other activities as well.</p>
+            <p>To "convey" a work means any kind of propagation that enables other parties to make or receive copies. Mere interaction with a user through a computer network, with no transfer of a copy, is not conveying.</p>
+            <p>An interactive user interface displays "Appropriate Legal Notices" to the extent that it includes a convenient and prominently visible feature that (1) displays an appropriate copyright notice, and (2) tells the user that there is no warranty for the work (except to the extent that warranties are provided), that licensees may convey the work under this License, and how to view a copy of this License. If the interface presents a list of user commands or options, such as a menu, a prominent item in the list meets this criterion.</p>
+            <h3>1. Source Code.</h3>
+            <p>The "source code" for a work means the preferred form of the work for making modifications to it. "Object code" means any non-source form of a work.</p>
+            <p>A "Standard Interface" means an interface that either is an official standard defined by a recognized standards body, or, in the case of interfaces specified for a particular programming language, one that is widely used among developers working in that language.</p>
+            <p>The "System Libraries" of an executable work include anything, other than the work as a whole, that (a) is included in the normal form of packaging a Major Component, but which is not part of that Major Component, and (b) serves only to enable use of the work with that Major Component, or to implement a Standard Interface for which an implementation is available to the public in source code form. A "Major Component", in this context, means a major essential component (kernel, window system, and so on) of the specific operating system (if any) on which the executable work runs, or a compiler used to produce the work, or an object code interpreter used to run it.</p>
+            <p>The "Corresponding Source" for a work in object code form means all the source code needed to generate, install, and (for an executable work) run the object code and to modify the work, including scripts to control those activities. However, it does not include the work's System Libraries, or general-purpose tools or generally available free programs which are used unmodified in performing those activities but which are not part of the work. For example, Corresponding Source includes interface definition files associated with source files for the work, and the source code for shared libraries and dynamically linked subprograms that the work is specifically designed to require, such as by intimate data communication or control flow between those subprograms and other parts of the work.</p>
+            <p>The Corresponding Source need not include anything that users can regenerate automatically from other parts of the Corresponding Source.</p>
+            <p>The Corresponding Source for a work in source code form is that same work.</p>
+            <h3>2. Basic Permissions.</h3>
+            <p>All rights granted under this License are granted for the term of copyright on the Program, and are irrevocable provided the stated conditions are met. This License explicitly affirms your unlimited permission to run the unmodified Program. The output from running a covered work is covered by this License only if the output, given its content, constitutes a covered work. This License acknowledges your rights of fair use or other equivalent, as provided by copyright law.</p>
+            <p>You may make, run and propagate covered works that you do not convey, without conditions so long as your license otherwise remains in force. You may convey covered works to others for the sole purpose of having them make modifications exclusively for you, or provide you with facilities for running those works, provided that you comply with the terms of this License in conveying all material for which you do not control copyright. Those thus making or running the covered works for you must do so exclusively on your behalf, under your direction and control, on terms that prohibit them from making any copies of your copyrighted material outside their relationship with you.</p>
+            <p>Conveying under any other circumstances is permitted solely under the conditions stated below. Sublicensing is not allowed; section 10 makes it unnecessary.</p>
+            <h3>3. Protecting Users' Legal Rights From Anti-Circumvention Law.</h3>
+            <p>No covered work shall be deemed part of an effective technological measure under any applicable law fulfilling obligations under article 11 of the WIPO copyright treaty adopted on 20 December 1996, or similar laws prohibiting or restricting circumvention of such measures.</p>
+            <p>When you convey a covered work, you waive any legal power to forbid circumvention of technological measures to the extent such circumvention is effected by exercising rights under this License with respect to the covered work, and you disclaim any intention to limit operation or modification of the work as a means of enforcing, against the work's users, your or third parties' legal rights to forbid circumvention of technological measures.</p>
+            <h3>4. Conveying Verbatim Copies.</h3>
+            <p>You may convey verbatim copies of the Program's source code as you receive it, in any medium, provided that you conspicuously and appropriately publish on each copy an appropriate copyright notice; keep intact all notices stating that this License and any non-permissive terms added in accord with section 7 apply to the code; keep intact all notices of the absence of any warranty; and give all recipients a copy of this License along with the Program.</p>
+            <p>You may charge any price or no price for each copy that you convey, and you may offer support or warranty protection for a fee.</p>
+            <h3>5. Conveying Modified Source Versions.</h3>
+            <p>You may convey a work based on the Program, or the modifications to produce it from the Program, in the form of source code under the terms of section 4, provided that you also meet all of these conditions:</p>
+            <ul>
+                <li>a) The work must carry prominent notices stating that you modified it, and giving a relevant date.</li>
+                <li>b) The work must carry prominent notices stating that it is released under this License and any conditions added under section 7. This requirement modifies the requirement in section 4 to "keep intact all notices".</li>
+                <li>c) You must license the entire work, as a whole, under this License to anyone who comes into possession of a copy. This License will therefore apply, along with any applicable section 7 additional terms, to the whole of the work, and all its parts, regardless of how they are packaged. This License gives no permission to license the work in any other way, but it does not invalidate such permission if you have separately received it.</li>
+                <li>d) If the work has interactive user interfaces, each must display Appropriate Legal Notices; however, if the Program has interactive interfaces that do not display Appropriate Legal Notices, your work need not make them do so.</li>
+            </ul>
+            <p>A compilation of a covered work with other separate and independent works, which are not by their nature extensions of the covered work, and which are not combined with it such as to form a larger program, in or on a volume of a storage or distribution medium, is called an "aggregate" if the compilation and its resulting copyright are not used to limit the access or legal rights of the compilation's users beyond what the individual works permit. Inclusion of a covered work in an aggregate does not cause this License to apply to the other parts of the aggregate.</p>
+            <h3>6. Conveying Non-Source Forms.</h3>
+            <p>You may convey a covered work in object code form under the terms of sections 4 and 5, provided that you also convey the machine-readable Corresponding Source under the terms of this License, in one of these ways:</p>
+            <ul>
+                <li>a) Convey the object code in, or embodied in, a physical product (including a physical distribution medium), accompanied by the Corresponding Source fixed on a durable physical medium customarily used for software interchange.</li>
+                <li>b) Convey the object code in, or embodied in, a physical product (including a physical distribution medium), accompanied by a written offer, valid for at least three years and valid for as long as you offer spare parts or customer support for that product model, to give anyone who possesses the object code either (1) a copy of the Corresponding Source for all the software in the product that is covered by this License, on a durable physical medium customarily used for software interchange, for a price no more than your reasonable cost of physically performing this conveying of source, or (2) access to copy the Corresponding Source from a network server at no charge.</li>
+                <li>c) Convey individual copies of the object code with a copy of the written offer to provide the Corresponding Source. This alternative is allowed only occasionally and noncommercially, and only if you received the object code with such an offer, in accord with subsection 6b.</li>
+                <li>d) Convey the object code by offering access from a designated place (gratis or for a charge), and offer equivalent access to the Corresponding Source in the same way through the same place at no further charge. You need not require recipients to copy the Corresponding Source along with the object code. If the place to copy the object code is a network server, the Corresponding Source may be on a different server (operated by you or a third party) that supports equivalent copying facilities, provided you maintain clear directions next to the object code saying where to find the Corresponding Source. Regardless of what server hosts the Corresponding Source, you remain obligated to ensure that it is available for as long as needed to satisfy these requirements.</li>
+                <li>e) Convey the object code using peer-to-peer transmission, provided you inform other peers where the object code and Corresponding Source of the work are being offered to the general public at no charge under subsection 6d.</li>
+            </ul>
+            <p>A separable portion of the object code, whose source code is excluded from the Corresponding Source as a System Library, need not be included in conveying the object code work.</p>
+            <p>A "User Product" is either (1) a "consumer product", which means any tangible personal property which is normally used for personal, family, or household purposes, or (2) anything designed or sold for incorporation into a dwelling. In determining whether a product is a consumer product, doubtful cases shall be resolved in favor of coverage. For a particular product received by a particular user, "normally used" refers to a typical or common use of that class of product, regardless of the status of the particular user or of the way in which the particular user actually uses, or expects or is expected to use, the product. A product is a consumer product regardless of whether the product has substantial commercial, industrial or non-consumer uses, unless such uses represent the only significant mode of use of the product.</p>
+            <p>"Installation Information" for a User Product means any methods, procedures, authorization keys, or other information required to install and execute modified versions of a covered work in that User Product from a modified version of its Corresponding Source. The information must suffice to ensure that the continued functioning of the modified object code is in no case prevented or interfered with solely because modification has been made.</p>
+            <p>If you convey an object code work under this section in, or with, or specifically for use in, a User Product, and the conveying occurs as part of a transaction in which the right of possession and use of the User Product is transferred to the recipient in perpetuity or for a fixed term (regardless of how the transaction is characterized), the Corresponding Source conveyed under this section must be accompanied by the Installation Information. But this requirement does not apply if neither you nor any third party retains the ability to install modified object code on the User Product (for example, the work has been installed in ROM).</p>
+            <p>The requirement to provide Installation Information does not include a requirement to continue to provide support service, warranty, or updates for a work that has been modified or installed by the recipient, or for the User Product in which it has been modified or installed. Access to a network may be denied when the modification itself materially and adversely affects the operation of the network or violates the rules and protocols for communication across the network.</p>
+            <p>Corresponding Source conveyed, and Installation Information provided, in accord with this section must be in a format that is publicly documented (and with an implementation available to the public in source code form), and must require no special password or key for unpacking, reading or copying.</p>
+            <h3>7. Additional Terms.</h3>
+            <p>"Additional permissions" are terms that supplement the terms of this License by making exceptions from one or more of its conditions. Additional permissions that are applicable to the entire Program shall be treated as though they were included in this License, to the extent that they are valid under applicable law. If additional permissions apply only to part of the Program, that part may be used separately under those permissions, but the entire Program remains governed by this License without regard to the additional permissions.</p>
+            <p>When you convey a copy of a covered work, you may at your option remove any additional permissions from that copy, or from any part of it. (Additional permissions may be written to require their own removal in certain cases when you modify the work.) You may place additional permissions on material, added by you to a covered work, for which you have or can give appropriate copyright permission.</p>
+            <p>Notwithstanding any other provision of this License, for material you add to a covered work, you may (if authorized by the copyright holders of that material) supplement the terms of this License with terms:</p>
+            <ul>
+                <li>a) Disclaiming warranty or limiting liability differently from the terms of sections 15 and 16 of this License; or</li>
+                <li>b) Requiring preservation of specified reasonable legal notices or author attributions in that material or in the Appropriate Legal Notices displayed by works containing it; or</li>
+                <li>c) Prohibiting misrepresentation of the origin of that material, or requiring that modified versions of such material be marked in reasonable ways as different from the original version; or</li>
+                <li>d) Limiting the use for publicity purposes of names of licensors or authors of the material; or</li>
+                <li>e) Declining to grant rights under trademark law for use of some trade names, trademarks, or service marks; or</li>
+                <li>f) Requiring indemnification of licensors and authors of that material by anyone who conveys the material (or modified versions of it) with contractual assumptions of liability to the recipient, for any liability that these contractual assumptions directly impose on those licensors and authors.</li>
+            </ul>
+            <p>All other non-permissive additional terms are considered "further restrictions" within the meaning of section 10. If the Program as you received it, or any part of it, contains a notice stating that it is governed by this License along with a term that is a further restriction, you may remove that term. If a license document contains a further restriction but permits relicensing or conveying under this License, you may add to a covered work material governed by the terms of that license document, provided that the further restriction does not survive such relicensing or conveying.</p>
+            <p>If you add terms to a covered work in accord with this section, you must place, in the relevant source files, a statement of the additional terms that apply to those files, or a notice indicating where to find the applicable terms.</p>
+            <p>Additional terms, permissive or non-permissive, may be stated in the form of a separately written license, or stated as exceptions; the above requirements apply either way.</p>
+            <h3>8. Termination.</h3>
+            <p>You may not propagate or modify a covered work except as expressly provided under this License. Any attempt otherwise to propagate or modify it is void, and will automatically terminate your rights under this License (including any patent licenses granted under the third paragraph of section 11).</p>
+            <p>However, if you cease all violation of this License, then your license from a particular copyright holder is reinstated (a) provisionally, unless and until the copyright holder explicitly and finally terminates your license, and (b) permanently, if the copyright holder fails to notify you of the violation by some reasonable means prior to 60 days after the cessation.</p>
+            <p>Moreover, your license from a particular copyright holder is reinstated permanently if the copyright holder notifies you of the violation by some reasonable means, this is the first time you have received notice of violation of this License (for any work) from that copyright holder, and you cure the violation prior to 30 days after your receipt of the notice.</p>
+            <p>Termination of your rights under this section does not terminate the licenses of parties who have received copies or rights from you under this License. If your rights have been terminated and not permanently reinstated, you do not qualify to receive new licenses for the same material under section 10.</p>
+            <h3>9. Acceptance Not Required for Having Copies.</h3>
+            <p>You are not required to accept this License in order to receive or run a copy of the Program. Ancillary propagation of a covered work occurring solely as a consequence of using peer-to-peer transmission to receive a copy likewise does not require acceptance. However, nothing other than this License grants you permission to propagate or modify any covered work. These actions infringe copyright if you do not accept this License. Therefore, by modifying or propagating a covered work, you indicate your acceptance of this License to do so.</p>
+            <h3>10. Automatic Licensing of Downstream Recipients.</h3>
+            <p>Each time you convey a covered work, the recipient automatically receives a license from the original licensors, to run, modify and propagate that work, subject to this License. You are not responsible for enforcing compliance by third parties with this License.</p>
+            <p>An "entity transaction" is a transaction transferring control of an organization, or substantially all assets of one, or subdividing an organization, or merging organizations. If propagation of a covered work results from an entity transaction, each party to that transaction who receives a copy of the work also receives whatever licenses to the work the party's predecessor in interest had or could give under the previous paragraph, plus a right to possession of the Corresponding Source of the work from the predecessor in interest, if the predecessor has it or can get it with reasonable efforts.</p>
+            <p>You may not impose any further restrictions on the exercise of the rights granted or affirmed under this License. For example, you may not impose a license fee, royalty, or other charge for exercise of rights granted under this License, and you may not initiate litigation (including a cross-claim or counterclaim in a lawsuit) alleging that any patent claim is infringed by making, using, selling, offering for sale, or importing the Program or any portion of it.</p>
+            <h3>11. Patents.</h3>
+            <p>A "contributor" is a copyright holder who authorizes use under this License of the Program or a work on which the Program is based. The work thus licensed is called the contributor's "contributor version".</p>
+            <p>A contributor's "essential patent claims" are all patent claims owned or controlled by the contributor, whether already acquired or hereafter acquired, that would be infringed by some manner, permitted by this License, of making, using, or selling its contributor version, but do not include claims that would be infringed only as a consequence of further modification of the contributor version. For purposes of this definition, "control" includes the right to grant patent sublicenses in a manner consistent with the requirements of this License.</p>
+            <p>Each contributor grants you a non-exclusive, worldwide, royalty-free patent license under the contributor's essential patent claims, to make, use, sell, offer for sale, import and otherwise run, modify and propagate the contents of its contributor version.</p>
+            <p>In the following three paragraphs, a "patent license" is any express agreement or commitment, however denominated, not to enforce a patent (such as an express permission to practice a patent or covenant not to sue for patent infringement). To "grant" such a patent license to a party means to make such an agreement or commitment not to enforce a patent against the party.</p>
+            <p>If you convey a covered work, knowingly relying on a patent license, and the Corresponding Source of the work is not available for anyone to copy, free of charge and under the terms of this License, through a publicly available network server or other readily accessible means, then you must either (1) cause the Corresponding Source to be so available, or (2) arrange to deprive yourself of the benefit of the patent license for this particular work, or (3) arrange, in a manner consistent with the requirements of this License, to extend the patent license to downstream recipients. "Knowingly relying" means you have actual knowledge that, but for the patent license, your conveying the covered work in a country, or your recipient's use of the covered work in a country, would infringe one or more identifiable patents in that country that you have reason to believe are valid.</p>
+            <p>If, pursuant to or in connection with a single transaction or arrangement, you convey, or propagate by procuring conveyance of, a covered work, and grant a patent license to some of the parties receiving the covered work authorizing them to use, propagate, modify or convey a specific copy of the covered work, then the patent license you grant is automatically extended to all recipients of the covered work and works based on it.</p>
+            <p>A patent license is "discriminatory" if it does not include within the scope of its coverage, prohibits the exercise of, or is conditioned on the non-exercise of one or more of the rights that are specifically granted under this License. You may not convey a covered work if you are a party to an arrangement with a third party that is in the business of distributing software, under which you make payment to the third party based on the extent of your activity of conveying the work, and under which the third party grants, to any of the parties who would receive the covered work from you, a discriminatory patent license (a) in connection with copies of the covered work conveyed by you (or copies made from those copies), or (b) primarily for and in connection with specific products or compilations that contain the covered work, unless you entered into that arrangement, or that patent license was granted, prior to 28 March 2007.</p>
+            <p>Nothing in this License shall be construed as excluding or limiting any implied license or other defenses to infringement that may otherwise be available to you under applicable patent law.</p>
+            <h3>12. No Surrender of Others' Freedom.</h3>
+            <p>If conditions are imposed on you (whether by court order, agreement or otherwise) that contradict the conditions of this License, they do not excuse you from the conditions of this License. If you cannot convey a covered work so as to satisfy simultaneously your obligations under this License and any other pertinent obligations, then as a consequence you may not convey it at all. For example, if you agree to terms that obligate you to collect a royalty for further conveying from those to whom you convey the Program, the only way you could satisfy both those terms and this License would be to refrain entirely from conveying the Program.</p>
+            <h3>13. Remote Network Interaction; Use with the GNU General Public License.</h3>
+            <p>Notwithstanding any other provision of this License, if you modify the Program, your modified version must prominently offer all users interacting with it remotely through a computer network (if your version supports such interaction) an opportunity to receive the Corresponding Source of your version by providing access to the Corresponding Source from a network server at no charge, through some standard or customary means of facilitating copying of software. This Corresponding Source shall include the Corresponding Source for any work covered by version 3 of the GNU General Public License that is incorporated pursuant to the following paragraph.</p>
+            <p>Notwithstanding any other provision of this License, you have permission to link or combine any covered work with a work licensed under version 3 of the GNU General Public License into a single combined work, and to convey the resulting work. The terms of this License will continue to apply to the part which is the covered work, but the work with which it is combined will remain governed by version 3 of the GNU General Public License.</p>
+            <h3>14. Revised Versions of this License.</h3>
+            <p>The Free Software Foundation may publish revised and/or new versions of the GNU Affero General Public License from time to time. Such new versions will be similar in spirit to the present version, but may differ in detail to address new problems or concerns.</p>
+            <p>Each version is given a distinguishing version number. If the Program specifies that a certain numbered version of the GNU Affero General Public License "or any later version" applies to it, you have the option of following the terms and conditions either of that numbered version or of any later version published by the Free Software Foundation. If the Program does not specify a version number of the GNU Affero General Public License, you may choose any version ever published by the Free Software Foundation.</p>
+            <p>If the Program specifies that a proxy can decide which future versions of the GNU Affero General Public License can be used, that proxy's public statement of acceptance of a version permanently authorizes you to choose that version for the Program.</p>
+            <p>Later license versions may give you additional or different permissions. However, no additional obligations are imposed on any author or copyright holder as a result of your choosing to follow a later version.</p>
+            <h3>15. Disclaimer of Warranty.</h3>
+            <p>THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.</p>
+            <h3>16. Limitation of Liability.</h3>
+            <p>IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+            <h3>17. Interpretation of Sections 15 and 16.</h3>
+            <p>If the disclaimer of warranty and limitation of liability provided above cannot be given local legal effect according to their terms, reviewing courts shall apply local law that most closely approximates an absolute waiver of all civil liability in connection with the Program, unless a warranty or assumption of liability accompanies a copy of the Program in return for a fee.</p>
+            <p><em>END OF TERMS AND CONDITIONS</em></p>
+            <h2>How to Apply These Terms to Your New Programs</h2>
+            <p>If you develop a new program, and you want it to be of the greatest possible use to the public, the best way to achieve this is to make it free software which everyone can redistribute and change under these terms.</p>
+            <p>To do so, attach the following notices to the program. It is safest to attach them to the start of each source file to most effectively state the exclusion of warranty; and each file should have at least the "copyright" line and a pointer to where the full notice is found.</p>
+<pre><code class="language-text">&lt;one line to give the program's name and a brief idea of what it does.&gt;
+Copyright (C) &lt;year&gt;  &lt;name of author&gt;
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+</code></pre>
+            <p>Also add information on how to contact you by electronic and paper mail.</p>
+            <p>If your software can interact with users remotely through a computer network, you should also make sure that it provides a way for users to get its source. For example, if your program is a web application, its interface could display a "Source" link that leads users to an archive of the code. There are many ways you could offer source, and different solutions will be better for different programs; see section 13 for the specific requirements.</p>
+            <p>You should also get your employer (if you work as a programmer) or school, if any, to sign a "copyright disclaimer" for the program, if necessary. For more information on this, and how to apply and follow the GNU AGPL, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+        </div>
+
+    </main>
+
+    <script>
+        document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.doc-section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+                var id = this.getAttribute('href').substring(1);
+                var target = document.getElementById(id);
+                if (target) {
+                    target.classList.add('active');
+                    this.classList.add('active');
+                    document.querySelector('.sidebar').classList.remove('open');
+                    window.scrollTo(0, 0);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
