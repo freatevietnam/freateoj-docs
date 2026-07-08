@@ -35,6 +35,7 @@
                         <li><a href="#pdfoid">Pdfoid</a></li>
                         <li><a href="#recaptcha">reCAPTCHA</a></li>
                         <li><a href="#ssl-proxy">SSL Proxy</a></li>
+                        <li><a href="#cache-configuration">Cache Configuration</a></li>
                         <li><a href="#contest-data-download">Contest Data Download</a></li>
                         <li><a href="#user-data-download">User Data Download</a></li>
                     </ul>
@@ -1487,6 +1488,74 @@ FREATEOJ_CAMO_EXCLUDE = ("https://oj.freate.io.vn",)
 FREATEOJ_CAMO_HTTPS = True
 </code></pre>
             <p>Restart FreateOJ for the changes to take effect. After restarting, you may have to purge Django's cache before seeing any changes.</p>
+        </div>
+
+        <div class="doc-section" id="cache-configuration">
+            <h1>Cache configuration</h1>
+            <p>FreateOJ uses Django's cache framework to cache data. This section explains how to configure caching and manage cache versions.</p>
+            <h2>Cache versioning</h2>
+            <p>Cache versioning allows you to invalidate all cached data when deploying new code. This ensures users get fresh data after updates.</p>
+            <p><strong>How it works:</strong></p>
+            <ul>
+                <li><code>KEY_PREFIX</code>: A prefix added to all cache keys to avoid collisions with other apps</li>
+                <li><code>VERSION</code>: An integer that gets appended to cache keys. Increase this to invalidate all cache.</li>
+            </ul>
+            <p><strong>When to increment VERSION:</strong></p>
+            <ul>
+                <li>After deploying code changes that affect cached data</li>
+                <li>After database migrations that change cached models</li>
+                <li>When you need to force a full cache refresh</li>
+            </ul>
+            <h2>Example configurations</h2>
+            <h3>Redis (Recommended for Production)</h3>
+<pre><code class="language-python">CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1',
+        'KEY_PREFIX': 'freateoj',
+        'VERSION': 1,  # Increase to invalidate cache
+    },
+}
+</code></pre>
+            <h3>Memcached</h3>
+<pre><code class="language-python">CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': '127.0.0.1:11211',
+        'KEY_PREFIX': 'freateoj',
+        'VERSION': 1,
+    },
+}
+</code></pre>
+            <h3>Local Memory (Development Only)</h3>
+<pre><code class="language-python">CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'KEY_PREFIX': 'freateoj',
+        'VERSION': 1,
+    },
+}
+</code></pre>
+            <h2>Deploy checklist</h2>
+            <ol>
+                <li>Update <code>VERSION</code> in CACHES config</li>
+                <li>Deploy code</li>
+                <li>(Optional) Run <code>python manage.py shell -c "from django.core.cache import cache; cache.clear()"</code> to manually clear cache</li>
+            </ol>
+            <h2>Per-site cache keys</h2>
+            <p>The project uses the following cache key patterns:</p>
+            <table>
+                <thead>
+                    <tr><th>Key Pattern</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>freateoj:1:*</code></td><td>Versioned cache entries (default)</td></tr>
+                    <tr><td><code>problem:*</code></td><td>Problem data cache</td></tr>
+                    <tr><td><code>contest:*</code></td><td>Contest data cache</td></tr>
+                    <tr><td><code>user:*</code></td><td>User profile cache</td></tr>
+                </tbody>
+            </table>
+            <p>When you increment <code>VERSION</code>, all keys prefixed with <code>freateoj:1:</code> become inaccessible, and new keys will use <code>freateoj:2:</code>.</p>
         </div>
 
         <div class="doc-section" id="contest-data-download">
